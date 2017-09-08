@@ -3,7 +3,7 @@ XML / HTML parser using zero-copy techniques to allow parsing large files effici
 
 Most markup parsers convert a string of markup into a nested map of keys and values, with each of these allocated as separate variables in memory. This means that a 10MB XML file may use 100MB of memory once parsed.
 
-A different technique would be to retain the original string and parse it into string offsets. Because these are just numbers they can be packed more efficiently ([a tutorial on zero-copy approaches](http://roxlu.com/2015/052/building-a-zero-copy-parser))
+A different technique would be to retain the original string and generate an index of string offsets. Because these offsets are just numbers they can be packed more efficiently ([a tutorial on zero-copy approaches](http://roxlu.com/2015/052/building-a-zero-copy-parser)).
 
 **This software is alpha and it doesn't yet work**
 
