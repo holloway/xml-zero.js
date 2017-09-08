@@ -13,4 +13,7 @@ A different technique would be to retain the original string and parse it into s
 
 * Editable XML (by way of making new strings and leaving the original untouched, so it's still immutable)
 
+## Out of scope
+
+* W3C DOM... I doubt if I'll ever achieve this, but of course we'll have some kind of API.
 
