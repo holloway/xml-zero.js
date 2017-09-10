@@ -9,8 +9,8 @@ A different technique would be to retain the original string and generate an ind
 
 ## Features
 * Fault tolerant like HTML5 / [XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
-* Tiny memory use
-* Valueless-attributes like HTML5 / XML5
+* Small memory use
+* Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt; and values without quotes (type=file).
 * Attributes and values may be quoted (E.g. you could have a valueless attribute of &lt;input "multiple files"&gt; )
 * Tiny and no dependencies
 * [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
@@ -21,8 +21,9 @@ A different technique would be to retain the original string and generate an ind
 
 ## Out of scope
 
-* W3C DOM (at least for now)
+* Complete W3C DOM (at least for now) although we will follow their API naming conventions where possible.
 
 ## Progress
 
-[X] Lexer
+- [x] Lexer
+- [ ] thing that turns that into hierarchy and provides W3c DOM-lik
