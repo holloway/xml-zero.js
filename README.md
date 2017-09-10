@@ -19,4 +19,4 @@ A different technique would be to retain the original string and generate an ind
 
 ## Out of scope
 
-* W3C DOM... I doubt if I'll ever achieve this, but of course we'll have some kind of API.
+* W3C DOM (at least for now)
