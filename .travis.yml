@@ -1,7 +1,7 @@
 language: node_js
 before_script:
   - npm install -g create-react-app
-  - nm install
+  - npm install
 install: true
 node_js:
   - "8"
