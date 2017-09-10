@@ -359,11 +359,81 @@ var cases = [
       [NodeTypes.TEXT_NODE, 98, 101],
       [NodeTypes.CLOSE_ELEMENT]
     ]
+  },
+  {
+    desc: "Notation element followed by text",
+    xml: `<!NOTATION name identifier "helper" >a`,
+    lex: [
+      [NodeTypes.NOTATION_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 11, 15],
+      [NodeTypes.ATTRIBUTE_NODE, 16, 26],
+      [NodeTypes.ATTRIBUTE_NODE, 28, 34],
+      [NodeTypes.TEXT_NODE, 37, 39]
+    ]
+  },
+  {
+    desc: "Weird <[ ... ]> syntax (maybe shorthand CDATA?) I once saw",
+    xml: `<[a<b></a>]>a`,
+    lex: [[NodeTypes.CDATA_SECTION_NODE, 2, 10], [NodeTypes.TEXT_NODE, 12, 14]]
+  },
+  {
+    desc: "HTML5 example",
+    xml: `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Title of the document</title>
+</head>
+
+<body>
+Content of the document......
+</body>
+
+</html> `,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.TEXT_NODE, 15, 16],
+      [NodeTypes.ELEMENT_NODE, 17, 21],
+      [NodeTypes.TEXT_NODE, 22, 23],
+      [NodeTypes.ELEMENT_NODE, 24, 28],
+      [NodeTypes.TEXT_NODE, 29, 30],
+      [NodeTypes.ELEMENT_NODE, 31, 35],
+      [NodeTypes.ATTRIBUTE_NODE, 36, 43, 45, 50],
+      [NodeTypes.TEXT_NODE, 52, 53],
+      [NodeTypes.ELEMENT_NODE, 54, 59],
+      [NodeTypes.TEXT_NODE, 60, 81],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 89, 90],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 97, 99],
+      [NodeTypes.ELEMENT_NODE, 100, 104],
+      [NodeTypes.TEXT_NODE, 105, 136],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 143, 145],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 152, 154]
+    ]
+  },
+  {
+    desc: "HTML5 example with multiple file input",
+    xml: `<!DOCTYPE html> <p><input type="file" multiple></p> `,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.TEXT_NODE, 15, 16],
+      [NodeTypes.ELEMENT_NODE, 17, 18],
+      [NodeTypes.ELEMENT_NODE, 20, 25],
+      [NodeTypes.ATTRIBUTE_NODE, 26, 30, 32, 36],
+      [NodeTypes.ATTRIBUTE_NODE, 38, 46],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 51, 53]
+    ]
   }
 ];
 
 describe("lexes", async () =>
-  cases.forEach(eachCase => {
+  cases.forEach((eachCase, i) => {
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
       let result;
       try {
@@ -383,6 +453,10 @@ describe("lexes", async () =>
           console.log("Result:", result, " from ", eachCase.xml);
           console.log(resolveNodes(eachCase.xml, result));
         }
+      } else {
+        // if (i === cases.length - 1) {
+        //   console.log(resolveNodes(eachCase.xml, result));
+        // }
       }
 
       expect(result).toEqual(eachCase.lex);

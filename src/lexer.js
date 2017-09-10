@@ -8,9 +8,9 @@ export const NodeTypes = {
   ENTITY_NODE: 6,
   PROCESSING_INSTRUCTION_NODE: 7,
   COMMENT_NODE: 8,
-  DOCUMENT_NODE: 9,
+  DOCUMENT_NODE: 9, // we don't support this Node Type... we'd prefer to just use elements
   DOCUMENT_TYPE_NODE: 10,
-  DOCUMENT_FRAGMENT_NODE: 11,
+  DOCUMENT_FRAGMENT_NODE: 11, // don't support this either
   NOTATION_NODE: 12,
   CLOSE_ELEMENT: 13 // unofficial
 };
@@ -180,7 +180,6 @@ export const onElement = (xml: string, i: number, inElement: boolean) => {
 };
 
 export const onExclamation = (xml: string, i: number, inElement: boolean) => {
-  // console.log("excla!", xml[i]);
   const token = [];
   if (xml.substring(i, i + 3) === "!--") {
     // maybe this should be the default assumption?
@@ -202,7 +201,25 @@ export const onExclamation = (xml: string, i: number, inElement: boolean) => {
   } else if (xml.substring(i, i + 7) === "!ENTITY") {
     i += 7;
     token.push(NodeTypes.ENTITY_NODE);
+  } else if (xml.substring(i, i + 9) === "!NOTATION") {
+    i += 9;
+    token.push(NodeTypes.NOTATION_NODE);
   }
+  return [i, inElement, token];
+};
+
+export const onShorthandCDATA = (
+  xml: string,
+  i: number,
+  inElement: boolean
+) => {
+  const token = [];
+  i += 1;
+  token.push(NodeTypes.CDATA_SECTION_NODE, i);
+  i = seekString(xml, i, "]>");
+  token.push(i);
+  i += 2;
+  inElement = false;
   return [i, inElement, token];
 };
 
@@ -258,6 +275,10 @@ const Lexx = async (xml: string, debug: boolean) => {
               break;
             case "!":
               [i, inElement, token] = onExclamation(xml, i, inElement);
+              tokens.push(token);
+              break;
+            case "[":
+              [i, inElement, token] = onShorthandCDATA(xml, i, inElement);
               tokens.push(token);
               break;
             default:
