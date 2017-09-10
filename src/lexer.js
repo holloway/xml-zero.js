@@ -47,83 +47,83 @@ const seekString = (xml: string, i: number, searchString: string): number => {
   return i;
 };
 
-export const resolve = (xml: string, node: Array<number>) => {
-  if (!node || (node.length - 1) % 2 !== 0)
-    return "Invalid 'node' variable: " + node;
+export const resolve = (xml: string, token: Array<number>) => {
+  if (!token || (token.length - 1) % 2 !== 0)
+    return "Invalid 'token' variable: " + token;
   return [
-    NodeTypeKeys[node[0]],
-    ...Array.apply(null, Array((node.length - 1) / 2)).map((w, pairIndex) => {
+    NodeTypeKeys[token[0]],
+    ...Array.apply(null, Array((token.length - 1) / 2)).map((w, pairIndex) => {
       const i = 1 + pairIndex * 2;
-      return xml.substring(node[i], node[i + 1]);
+      return xml.substring(token[i], token[i + 1]);
     })
   ];
 };
 
-export const resolveNodes = (xml, nodes) =>
-  nodes.map(node => resolve(xml, node));
+export const resolveNodes = (xml, tokens) =>
+  tokens.map(token => resolve(xml, token));
 
-export const resolveNodeNumber = (xml: string, node: Array<number>) => {
-  return [NodeTypeKeys[node[0]], node.slice(1)];
+export const resolveNodeNumber = (xml: string, token: Array<number>) => {
+  return [NodeTypeKeys[token[0]], token.slice(1)];
 };
 
-export const resolveNodesNumbers = (xml, nodes) => {
-  if (!nodes || !nodes.map) return `Not structured. Was ` + nodes;
-  return nodes.map(node => resolveNodeNumber(xml, node));
+export const resolveNodesNumbers = (xml, tokens) => {
+  if (!tokens || !tokens.map) return `Not structured. Was ` + tokens;
+  return tokens.map(token => resolveNodeNumber(xml, token));
 };
 
 export const onQuestionElement = (xml: string, i: number, mode: number) => {
   i++;
-  const node = [NodeTypes.PROCESSING_INSTRUCTION_NODE, i];
+  const token = [NodeTypes.PROCESSING_INSTRUCTION_NODE, i];
   i = seekChar(xml, i, [">", "?", ...WHITESPACE]);
   if (xml[i] === ">" && xml[i - 1] === "/") {
     i--;
   }
-  node.push(i);
+  token.push(i);
 
-  if (xml.substring(node[1], node[2]) === "xml") {
+  if (xml.substring(token[1], token[2]) === "xml") {
     // it's actually an XML declaration
-    node[0] = NodeTypes.XML_DECLARATION;
+    token[0] = NodeTypes.XML_DECLARATION;
   }
   i = seekNotChar(xml, i, ["?", ">", ...WHITESPACE]);
   if (xml[i] === "?") i++;
 
-  return [i, WHITESPACE.indexOf(xml[i]) === -1, node];
+  return [i, WHITESPACE.indexOf(xml[i]) === -1, token];
 };
 
 export const onAttribute = (xml: string, i: number, inElement: number) => {
   // console.log("onAttribute");
-  const node = [NodeTypes.ATTRIBUTE_NODE];
+  const token = [NodeTypes.ATTRIBUTE_NODE];
   if (QUOTES.indexOf(xml[i]) !== -1) {
     // console.log("attribute with quoted key");
     i++;
-    node.push(i);
-    i = seekChar(xml, i, [xml[node[1] - 1]]);
-    node.push(i); // end of attribute name
+    token.push(i);
+    i = seekChar(xml, i, [xml[token[1] - 1]]);
+    token.push(i); // end of attribute name
     i++; // skip quote
   } else if (xml[i] === "[" && WHITESPACE.indexOf(xml[i + 1]) !== -1) {
-    node.push(i);
+    token.push(i);
     i = seekString(xml, i, "]>");
     i += 1;
-    node.push(i); // end of attribute name
+    token.push(i); // end of attribute name
   } else {
-    node.push(i);
+    token.push(i);
     i = seekChar(xml, i, ["=", ">", ...WHITESPACE]);
-    node.push(i); // end of attribute name
+    token.push(i); // end of attribute name
   }
 
   if (xml[i] === ">") {
     // valueless attribute at the end of element so exit early
     //console.log("valueless attribute at end?", xml[i]);
     if (xml[i - 1] === "?") {
-      node[2]--;
+      token[2]--;
     }
     i++;
-    return [i, false, node];
+    return [i, false, token];
   }
   const notWhitespace = seekNotChar(xml, i, WHITESPACE);
   if (xml[notWhitespace] !== "=") {
     // console.log("valueless attribute!");
-    return [i, inElement, node];
+    return [i, inElement, token];
   }
   i = notWhitespace + 1;
   const enclosed = seekNotChar(xml, i, WHITESPACE);
@@ -132,24 +132,24 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
   if (isEnclosed) {
     // surrounded by quotes
     i++;
-    node.push(i);
+    token.push(i);
     i++;
     i = seekChar(xml, i, xml[enclosed]);
-    node.push(i);
+    token.push(i);
     i++;
   } else {
     // not surrounded by quotes
     // console.log("quoteless attribute");
-    node.push(i);
+    token.push(i);
     i = seekChar(xml, i, [">", ...WHITESPACE]);
     if (xml[i] === ">" && xml[i - 1] === "?") {
       i--;
     }
-    node.push(i);
+    token.push(i);
   }
 
   i = seekNotChar(xml, i, WHITESPACE);
-  return [i, true, node];
+  return [i, true, token];
 };
 
 export const onEndTag = (xml: string, i: number, inElement: boolean) => {
@@ -162,21 +162,21 @@ export const onEndTag = (xml: string, i: number, inElement: boolean) => {
 
 export const onClose = (xml: string, i: number, inElement: boolean) => {
   // console.log("onClose, starting... ", xml[i], "from", xml);
-  const node = [NodeTypes.CLOSE_ELEMENT];
+  const token = [NodeTypes.CLOSE_ELEMENT];
   i = seekChar(xml, i, [">", ...WHITESPACE]);
   i++;
-  return [i, false, node];
+  return [i, false, token];
 };
 
 export const onElement = (xml: string, i: number, inElement: boolean) => {
-  const node = [NodeTypes.ELEMENT_NODE, i];
+  const token = [NodeTypes.ELEMENT_NODE, i];
   i = seekChar(xml, i, [">", ...WHITESPACE]);
   const selfClosing = xml[i] === ">" && xml[i - 1] === "/";
   if (selfClosing) {
     i--;
   }
-  node.push(i);
-  return [i, true, node];
+  token.push(i);
+  return [i, true, token];
 };
 
 export const onExclamation = (xml: string, i: number, inElement: boolean) => {
@@ -224,12 +224,12 @@ export const onShorthandCDATA = (
 };
 
 export const onText = (xml: string, i: number, inElement: boolean) => {
-  const node = [NodeTypes.TEXT_NODE, i];
+  const token = [NodeTypes.TEXT_NODE, i];
   i = seekChar(xml, i, ["<"]);
-  node.push(i);
-  //console.log("ON TEXT", resolve(xml, node), xml[i]);
+  token.push(i);
+  //console.log("ON TEXT", resolve(xml, token), xml[i]);
 
-  return [i, inElement, node];
+  return [i, inElement, token];
 };
 
 // his divine shadow
