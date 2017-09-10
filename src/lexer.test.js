@@ -2,38 +2,33 @@ import Lex, { NodeTypes, resolveNodes } from "./lexer";
 import { isEqual } from "lodash";
 
 var cases = [
-  // hoisted up
   // This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
   {
     desc: "declaration",
     xml: "<?xml?>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_NODE, 6, 7]]
+    lex: [[NodeTypes.XML_DECLARATION, 2, 5]]
   },
   {
     desc: "declaration with space",
     xml: "<?xml ?>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_NODE, 7, 8]]
+    lex: [[NodeTypes.XML_DECLARATION, 2, 5]]
   },
   {
     desc: "declaration with non-wellformed closing",
     xml: "<?xml>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_NODE, 5, 6]]
+    lex: [[NodeTypes.XML_DECLARATION, 2, 5]]
   },
   {
     desc: "processing instruction",
     xml: "<?xml-?>",
-    lex: [
-      [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 6],
-      [NodeTypes.CLOSE_NODE, 7, 8]
-    ]
+    lex: [[NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 6]]
   },
   {
     desc: "declaration with attributes",
     xml: '<?xml version="1.0"?>',
     lex: [
       [NodeTypes.XML_DECLARATION, 2, 5],
-      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
-      [NodeTypes.CLOSE_NODE, 20, 21]
+      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18]
     ]
   },
   {
@@ -41,8 +36,7 @@ var cases = [
     xml: '<?xml version="1.0" ?>',
     lex: [
       [NodeTypes.XML_DECLARATION, 2, 5],
-      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
-      [NodeTypes.CLOSE_NODE, 21, 22]
+      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18]
     ]
   },
   {
@@ -50,8 +44,7 @@ var cases = [
     xml: "<?xml version='1.0'?>",
     lex: [
       [NodeTypes.XML_DECLARATION, 2, 5],
-      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
-      [NodeTypes.CLOSE_NODE, 20, 21]
+      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18]
     ]
   },
   {
@@ -60,8 +53,7 @@ var cases = [
     lex: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
-      [NodeTypes.ATTRIBUTE_NODE, 20, 24, 26, 28],
-      [NodeTypes.CLOSE_NODE, 34, 35]
+      [NodeTypes.ATTRIBUTE_NODE, 20, 24, 26, 28]
     ]
   },
   {
@@ -70,8 +62,7 @@ var cases = [
     lex: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
-      [NodeTypes.ATTRIBUTE_NODE, 19, 23, 25, 27],
-      [NodeTypes.CLOSE_NODE, 34, 35]
+      [NodeTypes.ATTRIBUTE_NODE, 19, 23, 25, 27]
     ]
   },
   {
@@ -79,8 +70,7 @@ var cases = [
     xml: '<?xml-stylesheet href="1.0"?>',
     lex: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
-      [NodeTypes.ATTRIBUTE_NODE, 17, 21, 23, 26],
-      [NodeTypes.CLOSE_NODE, 28, 29]
+      [NodeTypes.ATTRIBUTE_NODE, 17, 21, 23, 26]
     ]
   },
   {
@@ -88,8 +78,7 @@ var cases = [
     xml: "<?xml-stylesheet href?>",
     lex: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
-      [NodeTypes.ATTRIBUTE_NODE, 17, 21],
-      [NodeTypes.CLOSE_NODE, 22, 23]
+      [NodeTypes.ATTRIBUTE_NODE, 17, 21]
     ]
   },
   {
@@ -99,8 +88,7 @@ var cases = [
     lex: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
-      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 29, 36],
-      [NodeTypes.CLOSE_NODE, 38, 39]
+      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 29, 36]
     ]
   },
   {
@@ -110,8 +98,7 @@ var cases = [
     lex: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
-      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
-      [NodeTypes.CLOSE_NODE, 36, 37]
+      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35]
     ]
   },
   {
@@ -121,8 +108,7 @@ var cases = [
     lex: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
-      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
-      [NodeTypes.CLOSE_NODE, 35, 36]
+      [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35]
     ]
   },
   {
@@ -133,50 +119,167 @@ var cases = [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
-      [NodeTypes.ATTRIBUTE_NODE, 36, 37],
-      [NodeTypes.CLOSE_NODE, 37, 38]
+      [NodeTypes.ATTRIBUTE_NODE, 36, 37]
     ]
+  },
+  {
+    desc:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name",
+    xml: "<?xml-stylesheet href xx>",
+    lex: [
+      [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
+      [NodeTypes.ATTRIBUTE_NODE, 17, 21],
+      [NodeTypes.ATTRIBUTE_NODE, 22, 24]
+    ]
+  },
+  {
+    desc:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name and a space",
+    xml: "<?xml-stylesheet href xx >",
+    lex: [
+      [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
+      [NodeTypes.ATTRIBUTE_NODE, 17, 21],
+      [NodeTypes.ATTRIBUTE_NODE, 22, 24]
+    ]
+  },
+  {
+    desc: "declaration and self-closing element",
+    xml: "<?xml?><a/>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "declaration and element",
+    xml: "<?xml?><a>",
+    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.ELEMENT_NODE, 8, 9]]
+  },
+  {
+    desc: "declaration and two elements",
+    xml: "<?xml?><a><b>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.ELEMENT_NODE, 11, 12]
+    ]
+  },
+  {
+    desc: "declaration and two elements (one self-closing)",
+    xml: "<?xml?><a/><b>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.ELEMENT_NODE, 12, 13]
+    ]
+  },
+  {
+    desc: "declaration and two elements (one closing)",
+    xml: "<?xml?><a></a><b>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.ELEMENT_NODE, 15, 16]
+    ]
+  },
+  {
+    desc: "declaration and two elements (one self-closing)",
+    xml: "<?xml?><a></a><b/>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.ELEMENT_NODE, 15, 16],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "element followed by text",
+    xml: "<a>text",
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 2], [NodeTypes.TEXT_NODE, 3, 8]]
+  },
+  {
+    desc: "element surrounded by text",
+    xml: " <a>text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 1],
+      [NodeTypes.ELEMENT_NODE, 2, 3],
+      [NodeTypes.TEXT_NODE, 4, 9]
+    ]
+  },
+  {
+    desc: "comment",
+    xml: "<!-- test -->",
+    lex: [[NodeTypes.COMMENT_NODE, 4, 10]]
+  },
+  {
+    desc: "comment with text before",
+    xml: "a<!-- test -->",
+    lex: [[NodeTypes.TEXT_NODE, 0, 1], [NodeTypes.COMMENT_NODE, 5, 11]]
+  },
+  {
+    desc: "comment with text before and after",
+    xml: "a<!-- test -->b",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 1],
+      [NodeTypes.COMMENT_NODE, 5, 11],
+      [NodeTypes.TEXT_NODE, 14, 16]
+    ]
+  },
+  {
+    desc: "self-closing element",
+    xml: "<a/>",
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 2], [NodeTypes.CLOSE_ELEMENT]]
+  },
+  {
+    desc: "non-self-closing element",
+    xml: "<a>",
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 2]]
+  },
+  {
+    desc: "nested elements",
+    xml: "<a><b/></a>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 2],
+      [NodeTypes.ELEMENT_NODE, 4, 5],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "declaration and elements",
+    xml: "<?xml?><a><b/></a>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.ELEMENT_NODE, 11, 12],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "declaration and elements with attributes",
+    xml: "<?xml?><a href='http://html5zombo.com'><b/></a>",
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ELEMENT_NODE, 8, 9],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14, 16, 37],
+      [NodeTypes.ELEMENT_NODE, 40, 41],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "declaration with weird self-closing",
+    xml: "<?xml/>",
+    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_ELEMENT]]
   }
-
-  // {
-  //   desc: "Processing instruction with two attributes",
-  //   xml: '<?xml-stylesheet href="1.0"yahoo="serious"?>',
-  //   lex: [
-  //     [NodeTypes.XML_DECLARATION, 2, 5],
-  //     [NodeTypes.ATTRIBUTE_NODE, 17, 21, 23, 26],
-  //     [NodeTypes.ATTRIBUTE_NODE, 19, 23, 25, 27],
-  //     [NodeTypes.CLOSE_NODE, 34, 35]
-  //   ]
-  // }
-
-  //   {
-  //     desc: "declaration and element",
-  //     xml: "<?xml?>\n<a/>",
-  //     js1: { _declaration: {}, a: {} },
-  //     js2: { declaration: {}, elements: [{ type: "element", name: "a" }] }
-  //   },
-  //   {
-  //     desc: "declaration and elements",
-  //     xml: "<?xml?>\n<a>\n\v<b/>\n</a>",
-  //     js1: { _declaration: {}, a: { b: {} } },
-  //     js2: {
-  //       declaration: {},
-  //       elements: [
-  //         {
-  //           type: "element",
-  //           name: "a",
-  //           elements: [{ type: "element", name: "b" }]
-  //         }
-  //       ]
-  //     }
-  //   },
   //   {
   //     desc: "processing instruction <?go there>",
   //     xml: "<?go there?>",
-  //     js1: { _instruction: { go: "there" } },
-  //     js2: {
-  //       elements: [{ type: "instruction", name: "go", instruction: "there" }]
-  //     }
   //   },
   //   {
   //     desc: "should convert comment",
@@ -327,14 +430,28 @@ var cases = [
 describe("lexes", async () =>
   cases.forEach(eachCase => {
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
-      const result = await Lex(eachCase.xml);
+      let result;
+      try {
+        result = await Lex(eachCase.xml);
+      } catch (e) {}
 
-      console.log(
-        "Result:",
-        resolveNodes(eachCase.xml, result),
-        " from",
-        eachCase.xml
-      );
+      console.log(resolveNodes(eachCase.xml, result));
+
+      if (!isEqual(result, eachCase.lex)) {
+        console.log("Not equal");
+        try {
+          result = await Lex(eachCase.xml, true);
+        } catch (e) {}
+        if (result) {
+          console.log(
+            "Result:",
+            resolveNodes(eachCase.xml, result),
+            " from",
+            eachCase.xml
+          );
+        }
+      }
+
       expect(result).toEqual(eachCase.lex);
     });
   }));

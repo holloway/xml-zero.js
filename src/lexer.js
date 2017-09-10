@@ -1,5 +1,5 @@
 export const NodeTypes = {
-  XML_DECLARATION: 0, // unofficial, but also makes key indexes line up!
+  XML_DECLARATION: 0, // unofficial, but also makes array indexes line up with values!
   ELEMENT_NODE: 1,
   ATTRIBUTE_NODE: 2,
   TEXT_NODE: 3,
@@ -12,16 +12,10 @@ export const NodeTypes = {
   DOCUMENT_TYPE_NODE: 10,
   DOCUMENT_FRAGMENT_NODE: 11,
   NOTATION_NODE: 12,
-  CLOSE_NODE: 13 // unofficial
+  CLOSE_ELEMENT: 13 // unofficial
 };
 
 const NodeTypeKeys = Object.keys(NodeTypes); // technically keys are unordered so this should be sorted by NodeTypes' integer.
-
-const MODE = {
-  TEXT: 1,
-  OPEN_ELEMENT: 2,
-  OPEN_QUESTION_ELEMENT: 4
-};
 
 const WHITESPACE = [" ", "\r", "\n", "\t"];
 
@@ -47,8 +41,14 @@ const seekChar = (
   return i;
 };
 
+const seekString = (xml: string, i: number, searchString: string): number => {
+  i = xml.indexOf(searchString, i);
+  if (i === -1) i = xml.length;
+  return i;
+};
+
 export const resolve = (xml: string, node: Array<number>) => {
-  if ((node.length - 1) % 2 !== 0)
+  if (!node || (node.length - 1) % 2 !== 0)
     throw Error("Invalid 'node' variable: " + node);
   return [
     NodeTypeKeys[node[0]],
@@ -62,39 +62,44 @@ export const resolve = (xml: string, node: Array<number>) => {
 export const resolveNodes = (xml, nodes) =>
   nodes.map(node => resolve(xml, node));
 
-export const onQuestionElement = (xml: string, i: number) => {
+export const onQuestionElement = (xml: string, i: number, mode: number) => {
   i++;
   const node = [NodeTypes.PROCESSING_INSTRUCTION_NODE, i];
   i = seekChar(xml, i, [">", "?", ...WHITESPACE]);
+  if (xml[i] === ">" && xml[i - 1] === "/") {
+    i--;
+  }
   node.push(i);
-  if (
+
+  if (xml.substring(node[1], node[2]) === "xml") {
     // it's actually an XML declaration
-    xml.length > i &&
-    [">", "?", ...WHITESPACE].indexOf(xml[node[1] + 3]) !== -1
-  ) {
     node[0] = NodeTypes.XML_DECLARATION;
   }
-  i--;
-  return [i, node];
+  i = seekNotChar(xml, i, ["?", ">", ...WHITESPACE]);
+  if (xml[i] === "?") i++;
+  // console.log("onQuestionElement", `[${xml[i]}]`);
+
+  return [i, WHITESPACE.indexOf(xml[i]) === -1, node];
 };
 
-export const onAttribute = (xml: string, i: number, mode: ?number) => {
+export const onAttribute = (xml: string, i: number, inElement: number) => {
   // console.log("onAttribute");
   const node = [NodeTypes.ATTRIBUTE_NODE, i];
   i = seekChar(xml, i, ["=", ">", ...WHITESPACE]);
   node.push(i); // end of attribute name
   if (xml[i] === ">") {
     // valueless attribute at the end of element so exit early
+    // console.log("valueless attribute at end?", xml[i]);
     if (xml[i - 1] === "?") {
       node[2]--;
     }
-    i--;
-    return [i, node];
+    i++;
+    return [i, false, node];
   }
   const notWhitespace = seekNotChar(xml, i, WHITESPACE);
   if (xml[notWhitespace] !== "=") {
     // console.log("valueless attribute!");
-    return [i, node];
+    return [i, inElement, node];
   }
   i = notWhitespace + 1;
   const enclosed = seekNotChar(xml, i, WHITESPACE);
@@ -107,91 +112,181 @@ export const onAttribute = (xml: string, i: number, mode: ?number) => {
     i++;
     i = seekChar(xml, i, xml[enclosed]);
     node.push(i);
+    i++;
   } else {
     // not surrounded by quotes
+    // console.log("quoteless attribute");
     node.push(i);
     i = seekChar(xml, i, [">", ...WHITESPACE]);
-    if (
-      mode === MODE.OPEN_QUESTION_ELEMENT &&
-      xml[i] === ">" &&
-      xml[i - 1] === "?"
-    ) {
+    if (xml[i] === ">" && xml[i - 1] === "?") {
       i--;
     }
     node.push(i);
-    console.log("ATTR", resolve(xml, node));
-    i--;
+    // console.log("ATTR", resolve(xml, node));
   }
 
+  // console.log("onAttribute(1)", `[${xml[i]}]`);
+
+  i = seekNotChar(xml, i, WHITESPACE);
+
+  // console.log("onAttribute========", `[${xml[i]}]`);
+
   // console.log(resolve(xml, node));
-  return [i, node];
+  return [i, true, node];
 };
 
-export const onClose = (xml: string, i: number) => {
-  const node = [NodeTypes.CLOSE_NODE, i, i + 1];
+export const onEndTag = (xml: string, i: number, inElement: boolean) => {
+  if (xml[i] === "?") {
+    i++;
+  }
+  // console.log("onEndTag", xml[i]);
   i++;
-  return [i, node];
+  return [i, false];
+};
+
+export const onClose = (xml: string, i: number, inElement: boolean) => {
+  // console.log("onClose, starting... ", xml[i], "from", xml);
+  const node = [NodeTypes.CLOSE_ELEMENT];
+  i = seekChar(xml, i, [">", ...WHITESPACE]);
+  i++;
+  // console.log("onClose, returning... ", xml[i], "from", xml);
+  return [i, false, node];
+};
+
+export const onElement = (xml: string, i: number, inElement: boolean) => {
+  const node = [NodeTypes.ELEMENT_NODE, i];
+  i = seekChar(xml, i, [">", ...WHITESPACE]);
+  const selfClosing = xml[i] === ">" && xml[i - 1] === "/";
+  if (selfClosing) {
+    i--;
+  }
+  node.push(i);
+
+  // i = seekNotChar(xml, i, [">", ...WHITESPACE]);
+
+  // console.log("onElement", resolve(xml, node), `[${xml[i]}]`, i);
+  return [i, true, node];
+};
+
+export const onExclamation = (xml: string, i: number, inElement: boolean) => {
+  // console.log("excla!", xml[i]);
+  const token = [];
+  if (xml.substring(i, i + 3) === "!--") {
+    token.push(NodeTypes.COMMENT_NODE, i + 3);
+    i = seekString(xml, i, "-->");
+    token.push(i);
+    i += 3;
+    inElement = false;
+  } else {
+    // entity or doctype
+  }
+  return [i, inElement, token];
+};
+
+export const onText = (xml: string, i: number, inElement: boolean) => {
+  const node = [NodeTypes.TEXT_NODE, i];
+  i = seekChar(xml, i, ["<"]);
+  node.push(i);
+  console.log("ON TEXT", resolve(xml, node), xml[i]);
+
+  return [i, inElement, node];
 };
 
 // his divine shadow
-const Lexx = async (xml: string) => {
+const Lexx = async (xml: string, debug: boolean) => {
   const tokens = [];
   let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string
   let char;
-  let mode = MODE.TEXT;
+  let token;
+  let debugExitAfterLoops = 20;
+  let inElement = false;
+  if (debug) console.log("what");
   while (i < xml.length) {
+    if (
+      debug
+      // char === xml[i] // if it didn't progress i
+    )
+      console.log(
+        xml,
+        `Loop char [${xml[i + 1]}]`,
+        `i ${i + 1}`,
+        `inElement: ${inElement}`,
+        resolveNodes(xml, tokens)
+      );
     char = xml[i];
-    switch (char) {
-      case "<":
-        i++;
-        char = xml[i];
-        if (char === "?") {
-          mode = MODE.OPEN_QUESTION_ELEMENT;
-          let token;
-          [i, token] = onQuestionElement(xml, i);
-          tokens.push(token);
-        } else {
-          mode = MODE.OPEN_ELEMENT;
-          let token;
-          [i, token] = onElement(xml, i);
-          tokens.push(token);
-        }
-        break;
-      case "?":
-        if (mode === MODE.OPEN_QUESTION_ELEMENT) {
-          i++;
-        }
-      // intentional pass through
-      case ">":
-        if (
-          [MODE.OPEN_ELEMENT, MODE.OPEN_QUESTION_ELEMENT].indexOf(mode) !== -1
-        ) {
-          // console.log("mode close");
-          mode = MODE.TEXT;
-          let token;
-          [i, token] = onClose(xml, i);
-          tokens.push(token);
-        }
-        break;
-      case " ":
-      case "\r":
-      case "\n":
-      case "\t":
-        if (mode === MODE.OPEN_ELEMENT) {
-          i++;
-        }
-        break;
-      default:
-        // console.log("default");
-        if (mode === MODE.OPEN_ELEMENT || mode === MODE.OPEN_QUESTION_ELEMENT) {
-          // console.log("parse attribute");
-          let token;
-          [i, token] = onAttribute(xml, i, mode);
-          tokens.push(token);
-        }
+    debugExitAfterLoops--;
+    if (debugExitAfterLoops < 0) throw Error("Too many loops");
+
+    if (!inElement) {
+      // text
+      if (char !== "<") {
+        if (debug) console.log("text", char);
+        [i, inElement, token] = onText(xml, i);
+        tokens.push(token);
+      } else {
+        // element starts again
+        inElement = true;
+      }
     }
-    i++;
-    // console.log("about to char loop at ", xml[i], i, xml.length);
+    // don't join with above `if` to make this an `else if` because in above `inElement` can be set `true`
+    if (inElement) {
+      switch (char) {
+        case "<":
+          i++;
+          char = xml[i];
+          switch (char) {
+            case "/":
+              // console.log("CLOSE TAG CLOSE", i, xml[i]);
+              inElement = false;
+              [i, inElement, token] = onClose(xml, i);
+              tokens.push(token);
+              break;
+            case "?":
+              [i, inElement, token] = onQuestionElement(xml, i);
+              tokens.push(token);
+              break;
+            case "!":
+              [i, inElement, token] = onExclamation(xml, i);
+              tokens.push(token);
+              break;
+            default:
+              [i, inElement, token] = onElement(xml, i);
+              if (debug)
+                console.log("after onElement", xml[i], resolve(xml, token));
+              tokens.push(token);
+              break;
+          }
+          break;
+        case "/":
+          // console.log("---------- End slash?");
+          if (xml[i + 1] === ">") {
+            inElement = false;
+            [i, inElement, token] = onClose(xml, i);
+            tokens.push(token);
+          }
+          break;
+        case "?":
+        case ">":
+          if (debug) console.log("onTagEnd");
+
+          [i, inElement] = onEndTag(xml, i);
+
+          if (debug) console.log("after onTagEnd", xml[i], inElement);
+
+          break;
+        case " ":
+        case "\t":
+        case "\r":
+        case "\n": // ignore whitespace inside element between attributes or before end
+          i++;
+          break;
+        default:
+          [i, inElement, token] = onAttribute(xml, i, inElement);
+          if (debug) console.log("onAttriubte: inElement", inElement);
+          tokens.push(token);
+          break;
+      }
+    }
   }
   return tokens;
 };
