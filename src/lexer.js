@@ -232,14 +232,40 @@ export const onText = (xml: string, i: number, inElement: boolean) => {
   return [i, inElement, token];
 };
 
+export const onBlackhole = (
+  xml: string,
+  i: number,
+  inElement: boolean,
+  untilToken: Array<number>
+) => {
+  const token = [NodeTypes.TEXT_NODE, i];
+  const closingTag = `</${xml.substring(untilToken[1], untilToken[2])}`;
+  i = seekString(xml, i, closingTag);
+  token.push(i);
+  return [i, true, token];
+};
+
+const findLastNodeType = (tokens: Array<Array<number>>, nodeType: number) => {
+  for (var i = tokens.length - 1; i >= 0; --i) {
+    if (tokens[i][0] === nodeType) return tokens[i];
+  }
+};
+
+const defaultBlackholes = ["script", "style"];
+
 // his divine shadow
-const Lexx = async (xml: string, debug: boolean) => {
+const Lexx = async (
+  xml: string,
+  debug: boolean,
+  blackholes: Array<string> = defaultBlackholes
+) => {
   const tokens = [];
   let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string
   let char;
   let token;
   let debugExitAfterLoops = 100;
   let inElement = false;
+
   while (i < xml.length) {
     char = xml[i];
     debugExitAfterLoops--;
@@ -283,8 +309,6 @@ const Lexx = async (xml: string, debug: boolean) => {
               break;
             default:
               [i, inElement, token] = onElement(xml, i, inElement);
-              //if (debug)
-              // console.log("after onElement", xml[i], resolve(xml, token));
               tokens.push(token);
               break;
           }
@@ -302,6 +326,17 @@ const Lexx = async (xml: string, debug: boolean) => {
           if (debug) console.log("onTagEnd");
 
           [i, inElement] = onEndTag(xml, i);
+
+          const lastElement = findLastNodeType(tokens, NodeTypes.ELEMENT_NODE);
+          if (
+            lastElement &&
+            blackholes.indexOf(
+              xml.substring(lastElement[1], lastElement[2])
+            ) !== -1
+          ) {
+            [i, inElement, token] = onBlackhole(xml, i, inElement, lastElement);
+            tokens.push(token);
+          }
 
           if (debug) console.log("after onTagEnd", xml[i], inElement);
 

@@ -280,28 +280,28 @@ var cases = [
   {
     desc: "Doctype",
     xml: `<!DOCTYPE html PUBLIC
-  "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">`,
+    "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">`,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.ATTRIBUTE_NODE, 15, 21],
-      [NodeTypes.ATTRIBUTE_NODE, 25, 63],
-      [NodeTypes.ATTRIBUTE_NODE, 68, 123]
+      [NodeTypes.ATTRIBUTE_NODE, 27, 65],
+      [NodeTypes.ATTRIBUTE_NODE, 72, 127]
     ]
   },
   {
     desc: "Doctype followed by text",
     xml: `<!DOCTYPE html PUBLIC
-  "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">ab`,
+    "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">ab`,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.ATTRIBUTE_NODE, 15, 21],
-      [NodeTypes.ATTRIBUTE_NODE, 25, 63],
-      [NodeTypes.ATTRIBUTE_NODE, 68, 123],
-      [NodeTypes.TEXT_NODE, 125, 128]
+      [NodeTypes.ATTRIBUTE_NODE, 27, 65],
+      [NodeTypes.ATTRIBUTE_NODE, 72, 127],
+      [NodeTypes.TEXT_NODE, 129, 132]
     ]
   },
   {
@@ -345,18 +345,18 @@ var cases = [
   {
     desc: "Doctype with entity definitions",
     xml: `<!DOCTYPE y [
-   <!ENTITY % b '&#37;c;'>
-   <!ENTITY % c '&#60;!ENTITY a "x" >'>
-   %b;
-  ]>
-  <y>&a;</y>`,
+     <!ENTITY % b '&#37;c;'>
+     <!ENTITY % c '&#60;!ENTITY a "x" >'>
+     %b;
+    ]>
+    <y>&a;</y>`,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 11],
-      [NodeTypes.ATTRIBUTE_NODE, 12, 91],
-      [NodeTypes.TEXT_NODE, 92, 95],
-      [NodeTypes.ELEMENT_NODE, 96, 97],
-      [NodeTypes.TEXT_NODE, 98, 101],
+      [NodeTypes.ATTRIBUTE_NODE, 12, 99],
+      [NodeTypes.TEXT_NODE, 100, 105],
+      [NodeTypes.ELEMENT_NODE, 106, 107],
+      [NodeTypes.TEXT_NODE, 108, 111],
       [NodeTypes.CLOSE_ELEMENT]
     ]
   },
@@ -379,40 +379,40 @@ var cases = [
   {
     desc: "HTML5 example",
     xml: `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Title of the document</title>
-</head>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Title of the document</title>
+  </head>
 
-<body>
-Content of the document......
-</body>
+  <body>
+  Content of the document......
+  </body>
 
-</html> `,
+  </html> `,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
-      [NodeTypes.TEXT_NODE, 15, 16],
-      [NodeTypes.ELEMENT_NODE, 17, 21],
-      [NodeTypes.TEXT_NODE, 22, 23],
-      [NodeTypes.ELEMENT_NODE, 24, 28],
-      [NodeTypes.TEXT_NODE, 29, 30],
-      [NodeTypes.ELEMENT_NODE, 31, 35],
-      [NodeTypes.ATTRIBUTE_NODE, 36, 43, 45, 50],
-      [NodeTypes.TEXT_NODE, 52, 53],
-      [NodeTypes.ELEMENT_NODE, 54, 59],
-      [NodeTypes.TEXT_NODE, 60, 81],
+      [NodeTypes.TEXT_NODE, 15, 18],
+      [NodeTypes.ELEMENT_NODE, 19, 23],
+      [NodeTypes.TEXT_NODE, 24, 27],
+      [NodeTypes.ELEMENT_NODE, 28, 32],
+      [NodeTypes.TEXT_NODE, 33, 36],
+      [NodeTypes.ELEMENT_NODE, 37, 41],
+      [NodeTypes.ATTRIBUTE_NODE, 42, 49, 51, 56],
+      [NodeTypes.TEXT_NODE, 58, 61],
+      [NodeTypes.ELEMENT_NODE, 62, 67],
+      [NodeTypes.TEXT_NODE, 68, 89],
       [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.TEXT_NODE, 89, 90],
+      [NodeTypes.TEXT_NODE, 97, 100],
       [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.TEXT_NODE, 97, 99],
-      [NodeTypes.ELEMENT_NODE, 100, 104],
-      [NodeTypes.TEXT_NODE, 105, 136],
+      [NodeTypes.TEXT_NODE, 107, 111],
+      [NodeTypes.ELEMENT_NODE, 112, 116],
+      [NodeTypes.TEXT_NODE, 117, 152],
       [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.TEXT_NODE, 143, 145],
+      [NodeTypes.TEXT_NODE, 159, 163],
       [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.TEXT_NODE, 152, 154]
+      [NodeTypes.TEXT_NODE, 170, 172]
     ]
   },
   {
@@ -428,6 +428,16 @@ Content of the document......
       [NodeTypes.ATTRIBUTE_NODE, 38, 46],
       [NodeTypes.CLOSE_ELEMENT],
       [NodeTypes.TEXT_NODE, 51, 53]
+    ]
+  },
+  {
+    desc: "HTML script tag followed by text",
+    xml: `<script> var t="</closing>"; </script> `,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.TEXT_NODE, 8, 29],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 38, 40]
     ]
   }
 ];
