@@ -26,4 +26,4 @@ A different technique would be to retain the original string and generate an ind
 ## Progress
 
 - [x] Lexer
-- [ ] thing that turns that into hierarchy and provides W3c DOM-lik
+- [ ] thing that turns that into hierarchy and provides W3C DOM-like API
