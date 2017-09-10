@@ -1,4 +1,4 @@
-import Lex, { NodeTypes, resolveNodes } from "./lexer";
+import Lex, { NodeTypes, resolveNodes, resolveNodesNumbers } from "./lexer";
 import { isEqual } from "lodash";
 
 var cases = [
@@ -276,155 +276,72 @@ var cases = [
     desc: "declaration with weird self-closing",
     xml: "<?xml/>",
     lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_ELEMENT]]
+  },
+  {
+    desc: "Doctype",
+    xml: `<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">`,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.ATTRIBUTE_NODE, 15, 21],
+      [NodeTypes.ATTRIBUTE_NODE, 25, 63],
+      [NodeTypes.ATTRIBUTE_NODE, 68, 123]
+    ]
+  },
+  {
+    desc: "Doctype followed by text",
+    xml: `<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">ab`,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.ATTRIBUTE_NODE, 15, 21],
+      [NodeTypes.ATTRIBUTE_NODE, 25, 63],
+      [NodeTypes.ATTRIBUTE_NODE, 68, 123],
+      [NodeTypes.TEXT_NODE, 125, 128]
+    ]
+  },
+  {
+    desc: "HTML5 followed by html root tag",
+    xml: `<!DOCTYPE html><html>`,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.ELEMENT_NODE, 16, 20]
+    ]
+  },
+  {
+    desc: "CDATA Section",
+    xml: `<![CDATA[ \t <foo></bar> \t ]]>`,
+    lex: [[NodeTypes.CDATA_SECTION_NODE, 9, 26]]
+  },
+  {
+    desc: "CDATA Section followed by text",
+    xml: `<![CDATA[ \t <foo></bar> \t ]]>abc`,
+    lex: [[NodeTypes.CDATA_SECTION_NODE, 9, 26], [NodeTypes.TEXT_NODE, 29, 33]]
+  },
+  {
+    desc: "Entity",
+    xml: `<!ENTITY entityname "replacement text">`,
+    lex: [
+      [NodeTypes.ENTITY_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 9, 19],
+      [NodeTypes.ATTRIBUTE_NODE, 21, 37]
+    ]
+  },
+  {
+    desc: "Entity followed by text",
+    xml: `<!ENTITY entityname "replacement text">a`,
+    lex: [
+      [NodeTypes.ENTITY_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 9, 19],
+      [NodeTypes.ATTRIBUTE_NODE, 21, 37],
+      [NodeTypes.TEXT_NODE, 39, 41]
+    ]
   }
-  //   {
-  //     desc: "processing instruction <?go there>",
-  //     xml: "<?go there?>",
-  //   },
-  //   {
-  //     desc: "should convert comment",
-  //     xml: "<!-- \t Hello, World! \t -->",
-  //     js1: { _comment: " \t Hello, World! \t " },
-  //     js2: { elements: [{ type: "comment", comment: " \t Hello, World! \t " }] }
-  //   },
-  //   {
-  //     desc: "should convert 2 comments",
-  //     xml: "<!-- \t Hello \t -->\n<!-- \t World \t -->",
-  //     js1: { _comment: [" \t Hello \t ", " \t World \t "] },
-  //     js2: {
-  //       elements: [
-  //         { type: "comment", comment: " \t Hello \t " },
-  //         { type: "comment", comment: " \t World \t " }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert cdata",
-  //     xml: "<![CDATA[ \t <foo></bar> \t ]]>",
-  //     js1: { _cdata: " \t <foo></bar> \t " },
-  //     js2: { elements: [{ type: "cdata", cdata: " \t <foo></bar> \t " }] }
-  //   },
-  //   {
-  //     desc: "should convert 2 cdata",
-  //     xml: '<![CDATA[ \t data]]><![CDATA[< > " and & \t ]]>',
-  //     js1: { _cdata: [" \t data", '< > " and & \t '] },
-  //     js2: {
-  //       elements: [
-  //         { type: "cdata", cdata: " \t data" },
-  //         { type: "cdata", cdata: '< > " and & \t ' }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert doctype",
-  //     xml: '<!DOCTYPE note [\n<!ENTITY foo "baa">]>',
-  //     js1: { _doctype: 'note [\n<!ENTITY foo "baa">]' },
-  //     js2: {
-  //       elements: [{ type: "doctype", doctype: 'note [\n<!ENTITY foo "baa">]' }]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert element",
-  //     xml: "<a/>",
-  //     js1: { a: {} },
-  //     js2: { elements: [{ type: "element", name: "a" }] }
-  //   },
-  //   {
-  //     desc: "should convert 2 same elements",
-  //     xml: "<a/>\n<a/>",
-  //     js1: { a: [{}, {}] },
-  //     js2: {
-  //       elements: [{ type: "element", name: "a" }, { type: "element", name: "a" }]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert 2 different elements",
-  //     xml: "<a/>\n<b/>",
-  //     js1: { a: {}, b: {} },
-  //     js2: {
-  //       elements: [{ type: "element", name: "a" }, { type: "element", name: "b" }]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert attribute",
-  //     xml: '<a x="hello"/>',
-  //     js1: { a: { _attributes: { x: "hello" } } },
-  //     js2: {
-  //       elements: [{ type: "element", name: "a", attributes: { x: "hello" } }]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert 2 attributes",
-  //     xml: '<a x="1.234" y="It\'s"/>',
-  //     js1: { a: { _attributes: { x: "1.234", y: "It's" } } },
-  //     js2: {
-  //       elements: [
-  //         { type: "element", name: "a", attributes: { x: "1.234", y: "It's" } }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert text in element",
-  //     xml: "<a> \t Hi \t </a>",
-  //     js1: { a: { _text: " \t Hi \t " } },
-  //     js2: {
-  //       elements: [
-  //         {
-  //           type: "element",
-  //           name: "a",
-  //           elements: [{ type: "text", text: " \t Hi \t " }]
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert multi-line text",
-  //     xml: "<a>  Hi \n There \t </a>",
-  //     js1: { a: { _text: "  Hi \n There \t " } },
-  //     js2: {
-  //       elements: [
-  //         {
-  //           type: "element",
-  //           name: "a",
-  //           elements: [{ type: "text", text: "  Hi \n There \t " }]
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert nested elements",
-  //     xml: "<a>\n\v<b/>\n</a>",
-  //     js1: { a: { b: {} } },
-  //     js2: {
-  //       elements: [
-  //         {
-  //           type: "element",
-  //           name: "a",
-  //           elements: [{ type: "element", name: "b" }]
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   {
-  //     desc: "should convert 3 nested elements",
-  //     xml: "<a>\n\v<b>\n\v\v<c/>\n\v</b>\n</a>",
-  //     js1: { a: { b: { c: {} } } },
-  //     js2: {
-  //       elements: [
-  //         {
-  //           type: "element",
-  //           name: "a",
-  //           elements: [
-  //             {
-  //               type: "element",
-  //               name: "b",
-  //               elements: [{ type: "element", name: "c" }]
-  //             }
-  //           ]
-  //         }
-  //       ]
-  //     }
-  //   }
 ];
 
 describe("lexes", async () =>
@@ -435,20 +352,15 @@ describe("lexes", async () =>
         result = await Lex(eachCase.xml);
       } catch (e) {}
 
-      console.log(resolveNodes(eachCase.xml, result));
-
       if (!isEqual(result, eachCase.lex)) {
         console.log("Not equal");
+        console.log(resolveNodesNumbers(eachCase.xml, result));
         try {
           result = await Lex(eachCase.xml, true);
         } catch (e) {}
         if (result) {
-          console.log(
-            "Result:",
-            resolveNodes(eachCase.xml, result),
-            " from",
-            eachCase.xml
-          );
+          console.log("Result:", result, " from ", eachCase.xml);
+          console.log(resolveNodes(eachCase.xml, result));
         }
       }
 
