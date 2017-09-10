@@ -1,4 +1,4 @@
-# xml-zero.js (alpha) [![Build Status](https://travis-ci.org/holloway/xml-zero.js.svg?branch=master)](https://travis-ci.org/holloway/xml-zero.js)
+# xml-zero.js [![Build Status](https://travis-ci.org/holloway/xml-zero.js.svg?branch=master)](https://travis-ci.org/holloway/xml-zero.js)
 XML / HTML parser using zero-copy techniques to allow parsing large files efficiently.
 
 Most markup parsers convert a string of markup into a nested map of keys and values, with each of these allocated as separate variables in memory. This means that a 10MB XML file may use 100MB of memory once parsed.
@@ -10,7 +10,7 @@ A different technique would be to retain the original string and generate an ind
 ## Features
 * Fault tolerant like HTML5 / [XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
 * Valueless-attributes like HTML5 / XML5
-* Lots of tests
+* [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
 * Tiny and no dependencies
 
 ## Future Goals
