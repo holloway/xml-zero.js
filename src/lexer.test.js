@@ -341,6 +341,24 @@ var cases = [
       [NodeTypes.ATTRIBUTE_NODE, 21, 37],
       [NodeTypes.TEXT_NODE, 39, 41]
     ]
+  },
+  {
+    desc: "Doctype with entity definitions",
+    xml: `<!DOCTYPE y [
+   <!ENTITY % b '&#37;c;'>
+   <!ENTITY % c '&#60;!ENTITY a "x" >'>
+   %b;
+  ]>
+  <y>&a;</y>`,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 11],
+      [NodeTypes.ATTRIBUTE_NODE, 12, 91],
+      [NodeTypes.TEXT_NODE, 92, 95],
+      [NodeTypes.ELEMENT_NODE, 96, 97],
+      [NodeTypes.TEXT_NODE, 98, 101],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
   }
 ];
 
@@ -350,11 +368,14 @@ describe("lexes", async () =>
       let result;
       try {
         result = await Lex(eachCase.xml);
-      } catch (e) {}
+      } catch (e) {
+        console.log(e);
+      }
 
       if (!isEqual(result, eachCase.lex)) {
         console.log("Not equal");
         console.log(resolveNodesNumbers(eachCase.xml, result));
+        console.log("after");
         try {
           result = await Lex(eachCase.xml, true);
         } catch (e) {}

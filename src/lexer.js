@@ -66,8 +66,10 @@ export const resolveNodeNumber = (xml: string, node: Array<number>) => {
   return [NodeTypeKeys[node[0]], node.slice(1)];
 };
 
-export const resolveNodesNumbers = (xml, nodes) =>
-  nodes.map(node => resolveNodeNumber(xml, node));
+export const resolveNodesNumbers = (xml, nodes) => {
+  if (!nodes || !nodes.map) return `Not structured. Was ` + nodes;
+  return nodes.map(node => resolveNodeNumber(xml, node));
+};
 
 export const onQuestionElement = (xml: string, i: number, mode: number) => {
   i++;
@@ -98,6 +100,11 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     i = seekChar(xml, i, [xml[node[1] - 1]]);
     node.push(i); // end of attribute name
     i++; // skip quote
+  } else if (xml[i] === "[" && WHITESPACE.indexOf(xml[i + 1]) !== -1) {
+    node.push(i);
+    i = seekString(xml, i, "]>");
+    i += 1;
+    node.push(i); // end of attribute name
   } else {
     node.push(i);
     i = seekChar(xml, i, ["=", ">", ...WHITESPACE]);
@@ -214,7 +221,7 @@ const Lexx = async (xml: string, debug: boolean) => {
   let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string
   let char;
   let token;
-  let debugExitAfterLoops = 20;
+  let debugExitAfterLoops = 100;
   let inElement = false;
   while (i < xml.length) {
     char = xml[i];
