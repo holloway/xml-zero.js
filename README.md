@@ -1,4 +1,4 @@
-# xml-zero.js (alpha)
+# xml-zero.js (alpha) [![Build Status](https://travis-ci.org/holloway/xml-zero.js.svg?branch=master)](https://travis-ci.org/holloway/xml-zero.js)
 XML / HTML parser using zero-copy techniques to allow parsing large files efficiently.
 
 Most markup parsers convert a string of markup into a nested map of keys and values, with each of these allocated as separate variables in memory. This means that a 10MB XML file may use 100MB of memory once parsed.
