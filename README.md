@@ -28,6 +28,7 @@ A different technique would be to retain the original string and generate an ind
 ## Out of scope
 
 * Complete W3C DOM (at least for now) although we will follow their API naming conventions where possible.
+* HTML5 optional tags (&lt;html&gt;, &lt;head&gt;, &lt;body&gt;, &lt;tbody&gt;, [...etc](https://www.w3.org/TR/html5/syntax.html#syntax-tag-omission)) won't be inserted.
 
 ## Progress
 
