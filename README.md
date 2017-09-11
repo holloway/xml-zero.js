@@ -8,13 +8,13 @@ A different technique would be to retain the original string and generate an ind
 **This software is alpha and it doesn't yet work**
 
 ## Features
+* Tiny and no dependencies (2kb minified and gzipped)
+* Minimal memory use for data using Zero-Copy techniques.
 * Fault tolerant like HTML5 / [XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
 * Multiple root nodes
-* Small memory use
 * Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt;
 * Attribute value *and* attribute names may be quoted (E.g. &lt;tag "multiple files"=false/&gt; )
-* [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (they're not executed, they're just distinct node types).
-* Tiny and no dependencies (2kb minified and gzipped)
+* [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (not executed of course, but they're parsed as distinct node types).
 * [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
 
 ## Future Goals
