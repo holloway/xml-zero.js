@@ -16,7 +16,7 @@ A different technique would be to retain the original string and generate an ind
 * Attribute value *and* attribute names may be quoted (E.g. &lt;tag "some key"=false/&gt; )
 * [React JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (not executed of course, but they're parsed as distinct node types).
 * Safer by removing [SGML cruft](https://www.owasp.org/index.php/XML_Security_Cheat_Sheet). <details>
-    No support external DTD resolution, or nested XML Entity expansion. Only builtin entities in XML, NCRs, or HTML5 named entities are supported.  
+    No support for external DTD resolution, or nested XML Entity expansion. Only default entities in XML, NCRs, and HTML5 named entities are supported.
   </details>
 * [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
 
