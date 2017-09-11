@@ -37,5 +37,5 @@ A different technique would be to retain the original string and generate an ind
 ## References
 
 * [XML5](https://github.com/Ygg01/xml5_draft)
-* [MicroXML](https://www.w3.org/community/microxml/) ([JClark](http://blog.jclark.com/2010/12/microxml.html))
+* [MicroXML](https://www.w3.org/community/microxml/) ([JClark](http://blog.jclark.com/2010/12/microxml.html), [Intro Presentation](http://archive.xmlprague.cz/2013/presentations/Introducing_MicroXML.pdf)) 
 
