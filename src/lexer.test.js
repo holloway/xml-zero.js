@@ -439,6 +439,74 @@ var cases = [
       [NodeTypes.CLOSE_ELEMENT],
       [NodeTypes.TEXT_NODE, 38, 40]
     ]
+  },
+  {
+    desc: "Basic JSX attribute",
+    xml: "<button onClick={this.element}>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 29]
+    ]
+  },
+  {
+    desc: "JSX attribute with nesting",
+    xml: `<button onClick={this.element.bind(this, () => { something(); }) }>a`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 65],
+      [NodeTypes.TEXT_NODE, 67, 69]
+    ]
+  },
+  {
+    desc: "JSX attribute with nesting and strings",
+    xml: `<button onClick={this.element.bind(this, () => { "123}}}"; something(); }) }>a`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 75],
+      [NodeTypes.TEXT_NODE, 77, 79]
+    ]
+  },
+  {
+    desc: "JSX attribute with nesting and comments",
+    xml: `<button onClick={this.element.bind(this, () => { // }}}}
+    something(); }) }>a`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 77],
+      [NodeTypes.TEXT_NODE, 79, 81]
+    ]
+  },
+  {
+    desc: "JSX attribute with nesting and multiline comments",
+    xml: `<button onClick={this.element.bind(this, () => { /* }}}}
+  }}
+  */
+    something(); }) }>a`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 87],
+      [NodeTypes.TEXT_NODE, 89, 91]
+    ]
+  },
+  {
+    desc: "JSX attribute with malformed string with linebreak at end",
+    xml: `<button onClick={this.element.bind(this, () => { const x = "test
+    something(); }) }>a`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 85],
+      [NodeTypes.TEXT_NODE, 87, 89]
+    ]
+  },
+  {
+    desc: "JSX attribute with template string and nested expression",
+    xml:
+      "<button onClick={this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }>a",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 114],
+      [NodeTypes.TEXT_NODE, 116, 118]
+    ]
   }
 ];
 

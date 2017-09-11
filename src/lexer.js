@@ -12,7 +12,9 @@ export const NodeTypes = {
   DOCUMENT_TYPE_NODE: 10,
   DOCUMENT_FRAGMENT_NODE: 11, // don't support this either
   NOTATION_NODE: 12,
-  CLOSE_ELEMENT: 13 // unofficial
+  CLOSE_ELEMENT: 13, // unofficial
+  JSX_ATTRIBUTE: 14, // unofficial
+  JSX_INLINE: 15 // unofficial
 };
 
 const NodeTypeKeys = Object.keys(NodeTypes); // technically keys are unordered so this should be sorted by NodeTypes' integer.
@@ -20,6 +22,17 @@ const NodeTypeKeys = Object.keys(NodeTypes); // technically keys are unordered s
 const WHITESPACE = [" ", "\r", "\n", "\t"];
 
 const QUOTES = ['"', "'"];
+
+const ALL_QUOTES = ["`", ...QUOTES];
+
+const JS_OPEN_NESTING = ["{", "("];
+const JS_END_NESTING = ["}", ")"];
+const JS_ESCAPE_STRING = "\\";
+const JS_COMMENT = "//";
+const JS_MULTILINE_COMMENT = ["/*", "*/"];
+const LINE_BREAKS = ["\n", "\r"];
+const JS_TEMPLATE_STRING = "`";
+const JS_TEMPLATE_STRING_EXPRESSION = ["${", "}"];
 
 const seekNotChar = (xml: string, i: number, searchChars: Array<string>) => {
   while (searchChars.indexOf(xml[i]) !== -1) {
@@ -44,6 +57,72 @@ const seekChar = (
 const seekString = (xml: string, i: number, searchString: string): number => {
   i = xml.indexOf(searchString, i);
   if (i === -1) i = xml.length;
+  return i;
+};
+
+const seekJSExpression = (xml: string, i: number) => {
+  let nesting = 1;
+  const JS_TOKENS = [
+    ...JS_OPEN_NESTING,
+    ...JS_END_NESTING,
+    ...ALL_QUOTES,
+    JS_COMMENT[0],
+    JS_MULTILINE_COMMENT[0][0]
+  ];
+
+  let exitAfter = 100;
+  while (nesting > 0 && i < xml.length) {
+    i++;
+    i = seekChar(xml, i, JS_TOKENS);
+    const char = xml[i];
+    if (ALL_QUOTES.indexOf(char) !== -1) {
+      i++;
+      while (xml[i] !== char) {
+        if (char === JS_TEMPLATE_STRING) {
+          i = Math.min(
+            seekChar(xml, i, [char, JS_ESCAPE_STRING]),
+            seekString(xml, i, JS_TEMPLATE_STRING_EXPRESSION[0])
+          );
+          if (
+            xml.substring(i, i + JS_TEMPLATE_STRING_EXPRESSION[0].length) ===
+            JS_TEMPLATE_STRING_EXPRESSION[0]
+          ) {
+            i++;
+            i = seekJSExpression(xml, i);
+          }
+        } else {
+          i = seekChar(xml, i, [char, JS_ESCAPE_STRING, ...LINE_BREAKS]);
+        }
+        if (xml[i] === JS_ESCAPE_STRING) {
+          i += 2; // can escapes ever be more chars?
+        } else if (
+          char !== JS_TEMPLATE_STRING &&
+          LINE_BREAKS.indexOf(xml[i]) !== -1
+        ) {
+          i++;
+          break; // just exit
+        }
+        exitAfter--;
+        if (exitAfter === 0) throw Error("Exiting after too many loops");
+      }
+      i++; // past closing character
+    } else if (xml.substring(i, i + JS_COMMENT.length) === JS_COMMENT) {
+      i = seekChar(xml, i, LINE_BREAKS);
+      i++;
+    } else if (
+      xml.substring(i, i + JS_MULTILINE_COMMENT[0].length) ===
+      JS_MULTILINE_COMMENT[0]
+    ) {
+      i = seekString(xml, i, JS_MULTILINE_COMMENT[1]);
+      i++;
+    } else if (JS_END_NESTING.indexOf(char) !== -1) {
+      nesting--;
+    } else if (JS_OPEN_NESTING.indexOf(char) !== -1) {
+      nesting++;
+    }
+    exitAfter--;
+    if (exitAfter === 0) throw Error("Exiting after too many loops");
+  }
   return i;
 };
 
@@ -91,7 +170,6 @@ export const onQuestionElement = (xml: string, i: number, mode: number) => {
 };
 
 export const onAttribute = (xml: string, i: number, inElement: number) => {
-  // console.log("onAttribute");
   const token = [NodeTypes.ATTRIBUTE_NODE];
   if (QUOTES.indexOf(xml[i]) !== -1) {
     // console.log("attribute with quoted key");
@@ -122,19 +200,27 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
   }
   const notWhitespace = seekNotChar(xml, i, WHITESPACE);
   if (xml[notWhitespace] !== "=") {
-    // console.log("valueless attribute!");
     return [i, inElement, token];
   }
   i = notWhitespace + 1;
   const enclosed = seekNotChar(xml, i, WHITESPACE);
-  const isEnclosed = QUOTES.indexOf(xml[i]) !== -1;
+  const hasQuotes = QUOTES.indexOf(xml[i]) !== -1;
   // console.log("enclosed?", enclosed);
-  if (isEnclosed) {
+  if (hasQuotes) {
     // surrounded by quotes
     i++;
     token.push(i);
     i++;
     i = seekChar(xml, i, xml[enclosed]);
+    token.push(i);
+    i++;
+  } else if (xml[i] === "{") {
+    // JSX attribute
+    token[0] = NodeTypes.JSX_ATTRIBUTE;
+    i++;
+    token.push(i);
+    i--;
+    i = seekJSExpression(xml, i);
     token.push(i);
     i++;
   } else {
@@ -223,7 +309,12 @@ export const onShorthandCDATA = (
   return [i, inElement, token];
 };
 
-export const onText = (xml: string, i: number, inElement: boolean) => {
+export const onText = (
+  xml: string,
+  i: number,
+  inElement: boolean,
+  jsxInline: boolean
+) => {
   const token = [NodeTypes.TEXT_NODE, i];
   i = seekChar(xml, i, ["<"]);
   token.push(i);
@@ -257,13 +348,14 @@ const defaultBlackholes = ["script", "style"];
 const Lexx = async (
   xml: string,
   debug: boolean,
-  blackholes: Array<string> = defaultBlackholes
+  blackholes: Array<string> = defaultBlackholes,
+  jsxInline: boolean = true
 ) => {
   const tokens = [];
   let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string
   let char;
   let token;
-  let debugExitAfterLoops = 100;
+  let debugExitAfterLoops = 1073741824; // at least a gigabyte of text
   let inElement = false;
 
   while (i < xml.length) {
@@ -275,7 +367,7 @@ const Lexx = async (
       // text
       if (char !== "<") {
         // if (debug) console.log("text", char);
-        [i, inElement, token] = onText(xml, i, inElement);
+        [i, inElement, token] = onText(xml, i, inElement, jsxInline);
         tokens.push(token);
       } else {
         // element starts again
