@@ -505,8 +505,21 @@ var cases = [
     lex: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 114],
-      [NodeTypes.TEXT_NODE, 116, 118]
-    ]
+      [NodeTypes.TEXT_NODE, 116, 119]
+    ],
+    jsx: true
+  },
+  {
+    desc: "JSX inline with template string and nested expression",
+    xml:
+      "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 7],
+      [NodeTypes.TEXT_NODE, 8, 13],
+      [NodeTypes.JSX, 14, 111],
+      [NodeTypes.TEXT_NODE, 112, 126]
+    ],
+    jsx: true
   }
 ];
 
@@ -515,7 +528,7 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
       let result;
       try {
-        result = await Lex(eachCase.xml);
+        result = await Lex(eachCase.xml, { jsx: !!eachCase.jsx });
       } catch (e) {
         console.log(e);
       }
@@ -525,7 +538,7 @@ describe("lexes", async () =>
         console.log(resolveNodesNumbers(eachCase.xml, result));
         console.log("after");
         try {
-          result = await Lex(eachCase.xml, true);
+          result = await Lex(eachCase.xml, { jsx: !!eachCase.jsx });
         } catch (e) {}
         if (result) {
           console.log("Result:", result, " from ", eachCase.xml);

@@ -14,7 +14,7 @@ export const NodeTypes = {
   NOTATION_NODE: 12,
   CLOSE_ELEMENT: 13, // unofficial
   JSX_ATTRIBUTE: 14, // unofficial
-  JSX_INLINE: 15 // unofficial
+  JSX: 15 // unofficial
 };
 
 const NodeTypeKeys = Object.keys(NodeTypes); // technically keys are unordered so this should be sorted by NodeTypes' integer.
@@ -33,6 +33,7 @@ const JS_MULTILINE_COMMENT = ["/*", "*/"];
 const LINE_BREAKS = ["\n", "\r"];
 const JS_TEMPLATE_STRING = "`";
 const JS_TEMPLATE_STRING_EXPRESSION = ["${", "}"];
+const JSX_INLINE = ["{", "}"];
 
 const seekNotChar = (xml: string, i: number, searchChars: Array<string>) => {
   while (searchChars.indexOf(xml[i]) !== -1) {
@@ -70,7 +71,7 @@ const seekJSExpression = (xml: string, i: number) => {
     JS_MULTILINE_COMMENT[0][0]
   ];
 
-  let exitAfter = 100;
+  let exitAfter = 10000000; // 10MB of expression
   while (nesting > 0 && i < xml.length) {
     i++;
     i = seekChar(xml, i, JS_TOKENS);
@@ -94,7 +95,7 @@ const seekJSExpression = (xml: string, i: number) => {
           i = seekChar(xml, i, [char, JS_ESCAPE_STRING, ...LINE_BREAKS]);
         }
         if (xml[i] === JS_ESCAPE_STRING) {
-          i += 2; // can escapes ever be more chars?
+          i += 2; // can escapes ever be longer?
         } else if (
           char !== JS_TEMPLATE_STRING &&
           LINE_BREAKS.indexOf(xml[i]) !== -1
@@ -309,18 +310,34 @@ export const onShorthandCDATA = (
   return [i, inElement, token];
 };
 
-export const onText = (
-  xml: string,
-  i: number,
-  inElement: boolean,
-  jsxInline: boolean
-) => {
-  const token = [NodeTypes.TEXT_NODE, i];
-  i = seekChar(xml, i, ["<"]);
-  token.push(i);
-  //console.log("ON TEXT", resolve(xml, token), xml[i]);
+export const onText = (xml: string, i: number, jsx: ?boolean = false) => {
+  const tokens = [];
+  let token = [NodeTypes.TEXT_NODE, i];
 
-  return [i, inElement, token];
+  if (jsx) {
+    i = seekChar(xml, i, ["<", JSX_INLINE[0]]);
+    if (xml[i] === JSX_INLINE[0]) {
+      if (i !== token[1]) {
+        token.push(i);
+        tokens.push(token);
+      }
+      i++;
+      token = [NodeTypes.JSX, i];
+      i = seekJSExpression(xml, i);
+      token.push(i);
+      i++;
+      tokens.push(token);
+    } else {
+      i = seekChar(xml, i, ["<"]);
+      token.push(i);
+      tokens.push(token);
+    }
+  } else {
+    i = seekChar(xml, i, ["<"]);
+    token.push(i);
+    tokens.push(token);
+  }
+  return [i, false, tokens];
 };
 
 export const onBlackhole = (
@@ -344,18 +361,29 @@ const findLastNodeType = (tokens: Array<Array<number>>, nodeType: number) => {
 
 const defaultBlackholes = ["script", "style"];
 
+type Options = {
+  blackholes: ?Array<string>,
+  jsx: boolean
+};
+
+const defaultOptions = {
+  blackholes: defaultBlackholes,
+  jsx: false
+};
+
 // his divine shadow
-const Lexx = async (
-  xml: string,
-  debug: boolean,
-  blackholes: Array<string> = defaultBlackholes,
-  jsxInline: boolean = true
-) => {
+const Lexx = async (xml: string, options: ?Options) => {
+  const useOptions = {
+    ...defaultOptions,
+    ...options
+  };
+
   const tokens = [];
-  let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string
+  let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string and using integers makes sense
   let char;
   let token;
-  let debugExitAfterLoops = 1073741824; // at least a gigabyte of text
+  let textTokens;
+  let debugExitAfterLoops = 1073741824; // an arbitrary large number
   let inElement = false;
 
   while (i < xml.length) {
@@ -364,11 +392,10 @@ const Lexx = async (
     if (debugExitAfterLoops < 0) throw Error("Too many loops");
 
     if (!inElement) {
-      // text
+      // text node
       if (char !== "<") {
-        // if (debug) console.log("text", char);
-        [i, inElement, token] = onText(xml, i, inElement, jsxInline);
-        tokens.push(token);
+        [i, inElement, textTokens] = onText(xml, i, useOptions.jsx);
+        tokens.push(...textTokens);
       } else {
         // element starts again
         inElement = true;
@@ -415,23 +442,17 @@ const Lexx = async (
           break;
         case "?":
         case ">":
-          if (debug) console.log("onTagEnd");
-
           [i, inElement] = onEndTag(xml, i);
-
           const lastElement = findLastNodeType(tokens, NodeTypes.ELEMENT_NODE);
           if (
             lastElement &&
-            blackholes.indexOf(
+            useOptions.blackholes.indexOf(
               xml.substring(lastElement[1], lastElement[2])
             ) !== -1
           ) {
             [i, inElement, token] = onBlackhole(xml, i, inElement, lastElement);
             tokens.push(token);
           }
-
-          if (debug) console.log("after onTagEnd", xml[i], inElement);
-
           break;
         case " ":
         case "\t":
@@ -441,7 +462,6 @@ const Lexx = async (
           break;
         default:
           [i, inElement, token] = onAttribute(xml, i, inElement);
-          if (debug) console.log("onAttriubte: inElement", inElement);
           tokens.push(token);
           break;
       }

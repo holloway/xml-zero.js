@@ -9,10 +9,12 @@ A different technique would be to retain the original string and generate an ind
 
 ## Features
 * Fault tolerant like HTML5 / [XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
+* Multiple root nodes
 * Small memory use
-* Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt; and values without quotes (type=file).
-* Attributes and values may be quoted (E.g. you could have a valueless attribute of &lt;input "multiple files"&gt; )
-* Tiny and no dependencies
+* Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt;
+* Attribute value *and* attribute names may be quoted (E.g. &lt;tag "multiple files"=false/&gt; )
+* [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (they're not executed, they're just distinct node types).
+* Tiny and no dependencies (2kb minified and gzipped)
 * [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
 
 ## Future Goals
