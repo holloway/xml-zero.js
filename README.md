@@ -21,19 +21,16 @@ A different technique would be to retain the original string and generate an ind
   
 * [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
 
-## Future Goals
-
-* Editable XML (by way of making new strings and leaving the original untouched, so it's still immutable)
-
 ## Out of scope
 
 * Complete W3C DOM (at least for now) although we will follow their API naming conventions where possible.
-* HTML5 implied tags (e.g. xml-zero.js doesn't automatically create tags such as &lt;html&gt;, &lt;head&gt;, &lt;tbody&gt;, [...etc](https://www.w3.org/TR/html5/syntax.html#syntax-tag-omission)).
+* HTML5 implied tags (e.g. `xml-zero.js` won't automatically create tags such as &lt;html&gt;, &lt;head&gt;, &lt;tbody&gt;, [...etc](https://www.w3.org/TR/html5/syntax.html#syntax-tag-omission)).
 
 ## Progress
 
 - [x] Lexer
-- [ ] thing that turns that into hierarchy and provides W3C DOM-like API
+- [ ] A W3C DOM-like API
+- [ ] Editable XML (by way of making new strings and leaving the original untouched, so it's still immutable)
 
 ## References
 
