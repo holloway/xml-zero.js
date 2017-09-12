@@ -2,13 +2,21 @@ export const NodeTypes = {
   XML_DECLARATION: 0, // unofficial, but also makes array indexes line up with values!
   ELEMENT_NODE: 1,
   ATTRIBUTE_NODE: 2,
-  TEXT_NODE: 3,
+  TEXT_NODE: 3, // Note that these can include entities which should be resolved before display
   CDATA_SECTION_NODE: 4,
-  ENTITY_REFERENCE_NODE: 5,
+  ENTITY_REFERENCE_NODE: 5, // Not used
+  // After a lot of thought I've decided that entities shouldn't be resolved in the Lexer,
+  // Instead entities are just ignored and are just part of the text because,
+  // (1) We don't support crufty complicated entities that insert elements,
+  //     we just support entities that resolve to characters so it makes sense to leave it.
+  // (2) it simplifies the code and data structures, and it shrinks data structure memory
+  //     use a lot, E.g. an attribute value doesn't need to switch between text and entity modes
+  // (3) A single pass when they do need to be resolved using a utility function is fine
+  //     Eg. I'll make a .toTextContent() but that's not the job of this lexer.
   ENTITY_NODE: 6,
   PROCESSING_INSTRUCTION_NODE: 7,
   COMMENT_NODE: 8,
-  DOCUMENT_NODE: 9, // we don't support this Node Type... we'd prefer to just use elements
+  DOCUMENT_NODE: 9, // Not used. Root elements are elements.
   DOCUMENT_TYPE_NODE: 10,
   DOCUMENT_FRAGMENT_NODE: 11, // don't support this either
   NOTATION_NODE: 12,
