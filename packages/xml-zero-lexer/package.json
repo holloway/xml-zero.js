@@ -1,0 +1,42 @@
+{
+  "name": "xml-zero-lexer",
+  "version": "1.0.2",
+  "scripts": {
+    "build": "babel src --out-dir build",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "author": "Matthew Holloway",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holloway/xml-zero.js/"
+  },
+  "//": [
+    "babel-cli: needed for building",
+    "babel-register: needed for testing via AVA"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.26.0",
+    "jest": "^21.0.2"
+  },
+  "module": "./src/index.js",
+  "main": "./build/index.js",
+  "babel": {
+    "presets": [
+      "flow",
+      [
+        "env",
+        {
+          "targets": {
+            "node": "4"
+          }
+        }
+      ]
+    ],
+    "plugins": [["transform-object-rest-spread", { "useBuiltIns": true }]]
+  }
+}

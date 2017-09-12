@@ -1,7 +1,0 @@
-language: node_js
-before_script:
-  - npm install -g create-react-app
-  - npm install
-install: true
-node_js:
-  - "8"

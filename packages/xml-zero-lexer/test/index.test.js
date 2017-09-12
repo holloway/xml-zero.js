@@ -1,5 +1,28 @@
-import Lex, { NodeTypes, resolveNodes, resolveNodesNumbers } from "./lexer";
+import Lex, { NodeTypes } from "../src/index";
 import { isEqual } from "lodash";
+
+const resolve = (xml: string, token: Array<number>) => {
+  if (!token || (token.length - 1) % 2 !== 0)
+    return "Invalid 'token' variable: " + token;
+  return [
+    NodeTypeKeys[token[0]],
+    ...Array.apply(null, Array((token.length - 1) / 2)).map((w, pairIndex) => {
+      const i = 1 + pairIndex * 2;
+      return xml.substring(token[i], token[i + 1]);
+    })
+  ];
+};
+
+const resolveNodes = (xml, tokens) => tokens.map(token => resolve(xml, token));
+
+const resolveNodeNumber = (xml: string, token: Array<number>) => {
+  return [NodeTypeKeys[token[0]], token.slice(1)];
+};
+
+const resolveNodesNumbers = (xml, tokens) => {
+  if (!tokens || !tokens.map) return `Not structured. Was ` + tokens;
+  return tokens.map(token => resolveNodeNumber(xml, token));
+};
 
 var cases = [
   // This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
@@ -545,7 +568,7 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
       let result;
       try {
-        result = await Lex(eachCase.xml, { jsx: !!eachCase.jsx });
+        result = Lex(eachCase.xml, { jsx: !!eachCase.jsx });
       } catch (e) {
         console.log(e);
       }
@@ -555,7 +578,7 @@ describe("lexes", async () =>
         console.log(resolveNodesNumbers(eachCase.xml, result));
         console.log("after");
         try {
-          result = await Lex(eachCase.xml, { jsx: !!eachCase.jsx });
+          result = Lex(eachCase.xml, { jsx: !!eachCase.jsx });
         } catch (e) {}
         if (result) {
           console.log("Result:", result, " from ", eachCase.xml);
