@@ -6,14 +6,16 @@ export const NodeTypes = {
   CDATA_SECTION_NODE: 4,
   ENTITY_REFERENCE_NODE: 5, // Not used
   // After a lot of thought I've decided that entities shouldn't be resolved in the Lexer,
-  // Instead entities are just ignored and are just part of the text because,
-  // (1) We don't support crufty complicated entities that insert elements,
-  //     we just support entities that resolve to characters so it makes sense to leave it.
+  // Instead entities are just ignored and are stored as-is as part of the text because,
+  // (1) We only support entities that resolve to characters, we don't support crufty
+  //     complicated entities that insert elements, so there's no need to do it.
   // (2) it simplifies the code and data structures, and it shrinks data structure memory
   //     use a lot, E.g. an attribute value doesn't need to switch between text and entity modes
-  // (3) A single pass when they do need to be resolved using a utility function is fine
-  //     Eg. I'll make a .toTextContent() but that's not the job of this lexer.
-  ENTITY_NODE: 6,
+  // (3) A single pass when they do need to be resolved using a utility function is fine, and
+  //     this approach would probably result in less memory use.
+  //     Eg. whatever DOM-like API I make will have a .textContent() that resolves it on the fly
+  //     but that's not the job of this lexer.
+  ENTITY_NODE: 6, // Not used
   PROCESSING_INSTRUCTION_NODE: 7,
   COMMENT_NODE: 8,
   DOCUMENT_NODE: 9, // Not used. Root elements are elements.
