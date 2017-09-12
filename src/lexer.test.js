@@ -343,20 +343,21 @@ var cases = [
     ]
   },
   {
-    desc: "Doctype with entity definitions",
+    desc:
+      "Doctype with entity definitions, followed by element with an entity in text node",
     xml: `<!DOCTYPE y [
      <!ENTITY % b '&#37;c;'>
      <!ENTITY % c '&#60;!ENTITY a "x" >'>
      %b;
     ]>
-    <y>&a;</y>`,
+    <y>&nbsp;</y>`,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 11],
       [NodeTypes.ATTRIBUTE_NODE, 12, 99],
       [NodeTypes.TEXT_NODE, 100, 105],
       [NodeTypes.ELEMENT_NODE, 106, 107],
-      [NodeTypes.TEXT_NODE, 108, 111],
+      [NodeTypes.TEXT_NODE, 108, 114],
       [NodeTypes.CLOSE_ELEMENT]
     ]
   },
@@ -505,7 +506,7 @@ var cases = [
     lex: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 114],
-      [NodeTypes.TEXT_NODE, 116, 119]
+      [NodeTypes.TEXT_NODE, 116, 118]
     ],
     jsx: true
   },
@@ -517,9 +518,16 @@ var cases = [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.TEXT_NODE, 8, 13],
       [NodeTypes.JSX, 14, 111],
-      [NodeTypes.TEXT_NODE, 112, 126]
+      [NodeTypes.TEXT_NODE, 112, 125]
     ],
     jsx: true
+  },
+  {
+    desc: "JSX example with JSX turned off",
+    xml:
+      "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 7], [NodeTypes.TEXT_NODE, 8, 125]],
+    jsx: false
   }
 ];
 

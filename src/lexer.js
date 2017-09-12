@@ -313,31 +313,22 @@ export const onShorthandCDATA = (
 export const onText = (xml: string, i: number, jsx: ?boolean = false) => {
   const tokens = [];
   let token = [NodeTypes.TEXT_NODE, i];
+  const chars = ["<"];
+  if (jsx) chars.push(JSX_INLINE[0]);
+  i = seekChar(xml, i, chars);
 
-  if (jsx) {
-    i = seekChar(xml, i, ["<", JSX_INLINE[0]]);
-    if (xml[i] === JSX_INLINE[0]) {
-      if (i !== token[1]) {
-        token.push(i);
-        tokens.push(token);
-      }
-      i++;
-      token = [NodeTypes.JSX, i];
-      i = seekJSExpression(xml, i);
-      token.push(i);
-      i++;
-      tokens.push(token);
-    } else {
-      i = seekChar(xml, i, ["<"]);
-      token.push(i);
-      tokens.push(token);
-    }
-  } else {
-    i = seekChar(xml, i, ["<"]);
+  if (token[1] === i && xml[i] === JSX_INLINE[0]) {
+    i++;
+    token[0] = NodeTypes.JSX;
+    token[1] = i;
+    i = seekJSExpression(xml, i);
     token.push(i);
-    tokens.push(token);
+    i++;
+  } else {
+    token.push(i);
   }
-  return [i, false, tokens];
+
+  return [i, false, token];
 };
 
 export const onBlackhole = (
@@ -394,8 +385,8 @@ const Lexx = async (xml: string, options: ?Options) => {
     if (!inElement) {
       // text node
       if (char !== "<") {
-        [i, inElement, textTokens] = onText(xml, i, useOptions.jsx);
-        tokens.push(...textTokens);
+        [i, inElement, token] = onText(xml, i, useOptions.jsx);
+        tokens.push(token);
       } else {
         // element starts again
         inElement = true;
