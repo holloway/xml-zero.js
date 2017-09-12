@@ -31,6 +31,8 @@ A different technique would be to retain the original string and generate an ind
 
     npm install xml-zero-lexer
 
+(more packages to come, but i'm making it modular)
+
 ## Progress
 
 - [x] [Lexer](https://www.npmjs.com/package/xml-zero-lexer) (2.6KB minified and gzipped)
