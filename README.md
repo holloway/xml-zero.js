@@ -9,7 +9,7 @@ A different technique would be to retain the original string and generate an ind
 **This software is alpha and it doesn't yet work**
 
 ## Features
-* Tiny and no dependencies (2.6kb minified and gzipped)
+* Tiny and no dependencies
 * Minimal memory use for data using Zero-Copy techniques.
 * Fault tolerant like HTML5 / [XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
 * Multiple root nodes
@@ -27,9 +27,13 @@ A different technique would be to retain the original string and generate an ind
 * Complete W3C DOM (at least for now) although we will follow their API naming conventions where possible.
 * HTML5 implied tags (e.g. `xml-zero.js` won't automatically create tags such as &lt;html&gt;, &lt;head&gt;, &lt;tbody&gt;, [...etc](https://www.w3.org/TR/html5/syntax.html#syntax-tag-omission)).
 
+## Install
+
+    npm install xml-zero-lexer
+
 ## Progress
 
-- [x] Lexer (2.6KB minified and gzipped)
+- [x] [Lexer](https://www.npmjs.com/package/xml-zero-lexer) (2.6KB minified and gzipped)
 - [ ] A W3C DOM-like API
 - [ ] Editable XML (by way of making new strings and leaving the original untouched, so it's still immutable)
 
