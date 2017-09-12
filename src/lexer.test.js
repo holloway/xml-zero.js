@@ -528,6 +528,15 @@ var cases = [
       "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
     lex: [[NodeTypes.ELEMENT_NODE, 1, 7], [NodeTypes.TEXT_NODE, 8, 125]],
     jsx: false
+  },
+  {
+    desc: "Weird attribute name",
+    xml: "<a xml::lang='b'/>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 2],
+      [NodeTypes.ATTRIBUTE_NODE, 3, 12, 14, 15],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
   }
 ];
 
