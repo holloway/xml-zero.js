@@ -19,8 +19,7 @@ A different technique would be to retain the original string and generate an ind
 * Safer by removing [SGML cruft](https://www.owasp.org/index.php/XML_Security_Cheat_Sheet). <details>
     No support for external DTD resolution, or nested entity expansion. Only default entities in XML, NCRs, and HTML5 named entities are supported.
   </details>
-  
-* [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/src/lexer.test.js)
+* [Lots of tests](https://github.com/holloway/xml-zero.js/blob/master/packages/xml-zero-lexer/test/index.test.js)
 
 ## Out of scope
 
