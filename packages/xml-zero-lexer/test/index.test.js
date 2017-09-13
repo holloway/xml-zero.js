@@ -1,4 +1,4 @@
-import Lex, { NodeTypes } from "../src/index";
+import Lex, { NodeTypes, NodeTypeKeys } from "../src/index";
 import { isEqual } from "lodash";
 
 const resolve = (xml: string, token: Array<number>) => {
@@ -591,5 +591,36 @@ describe("lexes", async () =>
       }
 
       expect(result).toEqual(eachCase.lex);
+    });
+  }));
+
+describe("Constants", async () =>
+  test(`Constants`, async () => {
+    const keys = [
+      "XML_DECLARATION",
+      "ELEMENT_NODE",
+      "ATTRIBUTE_NODE",
+      "TEXT_NODE",
+      "CDATA_SECTION_NODE",
+      "ENTITY_REFERENCE_NODE",
+      "ENTITY_NODE",
+      "PROCESSING_INSTRUCTION_NODE",
+      "COMMENT_NODE",
+      "DOCUMENT_NODE",
+      "DOCUMENT_TYPE_NODE",
+      "DOCUMENT_FRAGMENT_NODE",
+      "NOTATION_NODE",
+      "CLOSE_ELEMENT",
+      "JSX_ATTRIBUTE",
+      "JSX"
+    ];
+
+    expect(NodeTypeKeys).toEqual(keys);
+
+    console.log("const");
+
+    const testKeys = Object.keys(NodeTypes);
+    testKeys.forEach(key => {
+      expect(NodeTypes[key]).toEqual(keys.indexOf(key));
     });
   }));

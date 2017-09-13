@@ -1,6 +1,6 @@
 {
-  "name": "xml-zero-lexer",
-  "version": "1.0.3",
+  "name": "xml-zero-dom",
+  "version": "1.0.0",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -20,6 +20,7 @@
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
+    "babel-preset-flow": "^6.23.0",
     "babel-register": "^6.26.0",
     "jest": "^21.0.2"
   },
@@ -37,6 +38,16 @@
         }
       ]
     ],
-    "plugins": [["transform-object-rest-spread", { "useBuiltIns": true }]]
+    "plugins": [
+      [
+        "transform-object-rest-spread",
+        {
+          "useBuiltIns": true
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "xml-zero-lexer": "^1.0.2"
   }
 }

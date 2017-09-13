@@ -40,7 +40,9 @@ export const NodeTypes = {
   JSX: 15 // unofficial
 };
 
-const NodeTypeKeys = Object.keys(NodeTypes); // technically keys are unordered so this should be sorted by NodeTypes' integer.
+export const NodeTypeKeys = Object.keys(NodeTypes).sort(
+  (a, b) => NodeTypes[a] - NodeTypes[b]
+);
 
 const WHITESPACE = [" ", "\r", "\n", "\t"];
 
