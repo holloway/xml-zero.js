@@ -27,7 +27,7 @@ describe("lexes", async () =>
 
       const result = dom.documentElement; // dom.toString();
 
-      console.log(result);
+      console.log("RESULT", result);
 
       expect(result).toEqual(eachCase.lex);
     });

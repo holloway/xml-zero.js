@@ -1,6 +1,6 @@
 {
   "name": "xml-zero-lexer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",

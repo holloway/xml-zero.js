@@ -617,8 +617,6 @@ describe("Constants", async () =>
 
     expect(NodeTypeKeys).toEqual(keys);
 
-    console.log("const");
-
     const testKeys = Object.keys(NodeTypes);
     testKeys.forEach(key => {
       expect(NodeTypes[key]).toEqual(keys.indexOf(key));
