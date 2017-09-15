@@ -1,7 +1,8 @@
 {
   "name": "xml-zero-lexer",
-  "description": "tiny memory-efficient HTML5/XML5 lexer/parser with lots of tests (zero copy). No browser required.",
-  "version": "1.0.6",
+  "description":
+    "Friendly and forgiving HTML5/XML5 lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
+  "version": "1.0.7",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
