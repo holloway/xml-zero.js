@@ -43,7 +43,7 @@ var cases = [
   },
   {
     desc:
-      "text followed by an element that's self-closing tag without a name </> ...actually indistinguishable from a closing tag without a name </> but we'll treat it as an element that's self-closing (with distinct .length === 1 so you can tell these apart)",
+      "text followed by an element that's self-closing element without a name </> ...actually indistinguishable from a closing tag without a name </> but we'll treat it as an element that's self-closing (with distinct .length === 1 so you can tell these apart... and if you want to ignore the open and just consider it a close you can ignore it)",
     xml: "text</>",
     lex: [
       [NodeTypes.TEXT_NODE, 0, 4],
@@ -91,6 +91,16 @@ var cases = [
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 10],
       [NodeTypes.TEXT_NODE, 13, 18]
+    ]
+  },
+  {
+    desc:
+      "fish tags. note that </> is parsed as an open AND close with .length===1 so you can filter it",
+    xml: "<></>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.CLOSE_ELEMENT]
     ]
   },
   {

@@ -174,7 +174,7 @@ export const onQuestionElement = (xml: string, i: number, mode: number) => {
 export const onAttribute = (xml: string, i: number, inElement: number) => {
   const token = [NodeTypes.ATTRIBUTE_NODE];
   if (QUOTES.indexOf(xml[i]) !== -1) {
-    // console.log("attribute with quoted key");
+    // attribute with quoted name
     i++;
     token.push(i);
     i = seekChar(xml, i, [xml[token[1] - 1]]);
