@@ -160,6 +160,15 @@ var cases = [
     ]
   },
   {
+    desc: "declaration with attribute single quotes value has a > in it",
+    xml: "<doc att='2>1'/>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 4],
+      [NodeTypes.ATTRIBUTE_NODE, 5, 8, 10, 13],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
     desc: "declaration with two attributes",
     xml: "<?xml version='1.0' lang=\"en\"    ?>",
     lex: [
