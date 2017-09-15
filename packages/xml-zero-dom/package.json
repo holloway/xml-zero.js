@@ -48,6 +48,6 @@
     ]
   },
   "dependencies": {
-    "xml-zero-lexer": "^1.0.3"
+    "xml-zero-lexer": "^1.0.4"
   }
 }

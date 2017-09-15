@@ -24,11 +24,8 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
       let dom;
       dom = new DOM(eachCase.xml);
-
-      const result = dom.documentElement; // dom.toString();
-
+      const result = dom.documentElement;
       console.log("RESULT", result);
-
       expect(result).toEqual(eachCase.lex);
     });
   }));

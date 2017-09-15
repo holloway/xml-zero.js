@@ -187,19 +187,22 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     token.push(i); // end of attribute name
   } else {
     token.push(i);
-    i = seekChar(xml, i, ["=", ">", ...WHITESPACE]);
+    i = seekChar(xml, i, ["=", "/", ">", ...WHITESPACE]);
     token.push(i); // end of attribute name
   }
 
+  // valueless attribute at the end of element so exit early
   if (xml[i] === ">") {
-    // valueless attribute at the end of element so exit early
-    //console.log("valueless attribute at end?", xml[i]);
     if (xml[i - 1] === "?") {
       token[2]--;
     }
     i++;
     return [i, false, token];
+  } else if (xml[i] === "/" && xml[i + 1] === ">") {
+    console.log("self closing", xml[i]);
+    return [i, true, token];
   }
+
   const notWhitespace = seekNotChar(xml, i, WHITESPACE);
   if (xml[notWhitespace] !== "=") {
     return [i, inElement, token];
@@ -258,11 +261,15 @@ export const onClose = (xml: string, i: number, inElement: boolean) => {
 
 export const onElement = (xml: string, i: number, inElement: boolean) => {
   const token = [NodeTypes.ELEMENT_NODE, i];
-  i = seekChar(xml, i, [">", ...WHITESPACE]);
-  const selfClosing = xml[i] === ">" && xml[i - 1] === "/";
-  if (selfClosing) {
-    i--;
+  i = seekChar(xml, i, [">", "/", ...WHITESPACE]);
+
+  if (token[1] === i) {
+    // element was nameless "<>" or "<    attr>" or "< />"
+    // element without a name
+    token.pop();
+    return [i, true, token];
   }
+
   token.push(i);
   return [i, true, token];
 };
@@ -401,8 +408,11 @@ const Lexx = (xml: string, options: ?Options) => {
           char = xml[i];
           switch (char) {
             case "/":
-              // console.log("CLOSE TAG CLOSE", i, xml[i]);
               inElement = false;
+              if (xml[i + 1] === ">") {
+                [i, inElement, token] = onElement(xml, i, inElement);
+                tokens.push(token);
+              }
               [i, inElement, token] = onClose(xml, i, inElement);
               tokens.push(token);
               break;
@@ -418,6 +428,11 @@ const Lexx = (xml: string, options: ?Options) => {
               [i, inElement, token] = onShorthandCDATA(xml, i, inElement);
               tokens.push(token);
               break;
+            case ">":
+              [i, inElement, token] = onElement(xml, i, inElement);
+              tokens.push(token);
+
+              break;
             default:
               [i, inElement, token] = onElement(xml, i, inElement);
               tokens.push(token);
@@ -430,6 +445,9 @@ const Lexx = (xml: string, options: ?Options) => {
             inElement = false;
             [i, inElement, token] = onClose(xml, i, inElement);
             tokens.push(token);
+          } else {
+            // in an element finding a "/" between attributes but not at end. weird. ignore.
+            i++;
           }
           break;
         case "?":

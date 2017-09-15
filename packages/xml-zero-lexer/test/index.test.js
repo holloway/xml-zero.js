@@ -27,6 +27,85 @@ const resolveNodesNumbers = (xml, tokens) => {
 var cases = [
   // This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
   {
+    desc: "text",
+    xml: "text",
+    lex: [[NodeTypes.TEXT_NODE, 0, 5]]
+  },
+  {
+    desc:
+      "a tag with no name which we will consider to be not self-closing. surrounded by text",
+    xml: "text<>test",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.TEXT_NODE, 6, 11]
+    ]
+  },
+  {
+    desc:
+      "text followed by an element that's self-closing tag without a name </> ...actually indistinguishable from a closing tag without a name </> but we'll treat it as an element that's self-closing (with distinct .length === 1 so you can tell these apart)",
+    xml: "text</>",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
+  },
+  {
+    desc: "the tag has no name self-closing followed by text",
+    xml: "text</>text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 7, 12]
+    ]
+  },
+  {
+    desc: "the tag has no name self-closing followed by text",
+    xml: "text< />text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 8, 13]
+    ]
+  },
+  {
+    desc: "the tag has no name self-closing followed by text",
+    xml: "text< attr/>text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 10],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 12, 17]
+    ]
+  },
+  {
+    desc:
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+    xml: "text< attr/ >text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 10],
+      [NodeTypes.TEXT_NODE, 13, 18]
+    ]
+  },
+  {
+    desc:
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+    xml: "text< doc></doc>text",
+    lex: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.ELEMENT_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 9],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 16, 21]
+    ]
+  },
+  {
     desc: "declaration",
     xml: "<?xml?>",
     lex: [[NodeTypes.XML_DECLARATION, 2, 5]]
