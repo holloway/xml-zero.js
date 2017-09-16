@@ -10,10 +10,10 @@ A different technique would be to retain the original string and generate an ind
 
 ## Features
 * Fault tolerant like HTML5/[XML5](https://github.com/Ygg01/xml5_draft). Doesn't care about well-formedness.
- * Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt;
- * Attribute value *and* attribute names may be quoted (E.g. &lt;tag "some key"=false/&gt; )
- * [React JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (not executed of course, but they're parsed as distinct node types).
- * Multiple root nodes. <abbr title="garbage in, garbage out">GIGO</abbr>.
+  * Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt;
+  * Attribute value *and* attribute names may be quoted (E.g. &lt;tag "some key"=false/&gt; )
+  * [React JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (not executed of course, but they're parsed as distinct node types).
+  * Multiple root nodes. <abbr title="garbage in ➜ garbage out">GIGO</abbr>.
 * Minimal memory use for data using Zero-Copy techniques.
 * Tiny, no dependencies, and can run in Web Workers (e.g. doesn't use DOM APIs).
 * Safer by removing [SGML cruft](https://www.owasp.org/index.php/XML_Security_Cheat_Sheet). <details>
