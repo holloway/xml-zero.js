@@ -1,11 +1,9 @@
 import DOM from "../src/index";
-import isEqual from "lodash";
+import { get } from "lodash";
 
-var cases = [
-  {
-    desc: "HTML5 example",
-    xml: `<!DOCTYPE html>
-  <html>
+const html5 = `
+  <!DOCTYPE html>
+  <html lang="en" html5>
   <head>
   <meta charset="UTF-8">
   <title>Title of the document</title>
@@ -15,17 +13,44 @@ var cases = [
   Content of the document......
   </body>
 
-  </html> `
+  </html>`;
+
+var cases = [
+  {
+    desc: "HTML5 example",
+    xml: html5,
+    property: "documentElement.name",
+    result: "html"
+  },
+  {
+    desc: "HTML5 example",
+    xml: html5,
+    property: "documentElement.getAttribute",
+    arguments: ["lang"],
+    result: "en"
+  },
+  {
+    desc: "HTML5 example",
+    xml: html5,
+    property: "documentElement.getAttribute",
+    arguments: ["html5"],
+    result: true
   }
 ];
 
 describe("lexes", async () =>
   cases.forEach((eachCase, i) => {
-    test(`${eachCase.desc} ${eachCase.xml}`, async () => {
+    test(`${eachCase.desc} ${eachCase.xml.replace(
+      /[\r\n]/g,
+      ""
+    )}`, async () => {
       let dom;
       dom = new DOM(eachCase.xml);
-      const result = dom.documentElement;
-      console.log("RESULT", result);
-      expect(result).toEqual(eachCase.lex);
+      let result = get(dom, eachCase.property);
+      if (eachCase.arguments) {
+        // result is a function
+        result = result(...eachCase.arguments);
+      }
+      expect(result).toEqual(eachCase.result);
     });
   }));

@@ -1,6 +1,6 @@
 # xml-zero.js
 
-Friendly and forgiving HTML5/XML5 lexer that supports React JSX, and uses zero-copy techniques to allow parsing large files efficiently.
+Friendly and forgiving HTML5/XML5 parser that supports React JSX, and uses zero-copy techniques to allow parsing large files efficiently.
 
 Most markup parsers convert a string of markup into a nested map(hash/dict) of keys and values, with each of these allocated as separate variables in memory. This means that a 10MB XML file may balloon to 100MB of memory.
 

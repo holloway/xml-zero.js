@@ -1,8 +1,8 @@
 {
   "name": "xml-zero-dom",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
-    "build": "babel src --out-dir build",
+    "build": "babel src --out-file build/index.js",
     "prepublishOnly": "npm run build",
     "test": "jest"
   },
@@ -48,6 +48,6 @@
     ]
   },
   "dependencies": {
-    "xml-zero-lexer": "^1.0.4"
+    "xml-zero-lexer": "^1.0.7"
   }
 }
