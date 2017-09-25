@@ -1,8 +1,10 @@
 {
-  "name": "xml-zero-dom",
+  "name": "whats-the-damage",
+  "description":
+    "What's the damage? ...of running that script in CPU and memory usage",
   "version": "0.0.1",
   "scripts": {
-    "build": "babel src --out-file build/index.js",
+    "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
     "test": "jest"
   },
@@ -20,11 +22,8 @@
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
-    "babel-preset-flow": "^6.23.0",
     "babel-register": "^6.26.0",
-    "benchmark": "^2.1.4",
-    "jest": "^21.0.2",
-    "memwatch-next": "^0.3.0"
+    "jest": "^21.0.2"
   },
   "module": "./src/index.js",
   "main": "./build/index.js",
@@ -40,16 +39,6 @@
         }
       ]
     ],
-    "plugins": [
-      [
-        "transform-object-rest-spread",
-        {
-          "useBuiltIns": true
-        }
-      ]
-    ]
-  },
-  "dependencies": {
-    "xml-zero-lexer": "^1.0.7"
+    "plugins": [["transform-object-rest-spread", { "useBuiltIns": true }]]
   }
 }

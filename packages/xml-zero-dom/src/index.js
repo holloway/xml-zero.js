@@ -1,6 +1,6 @@
 import Lexx, { NodeTypes, NodeTypeKeys } from "xml-zero-lexer";
 import XMLZeroElement from "./element";
-import { seekByNodeType } from "./utils";
+import { seekByNodeType, getSiblings } from "./utils";
 import type { Token, Tokens } from "./types";
 
 export default class XMLZeroDOM {
@@ -11,17 +11,37 @@ export default class XMLZeroDOM {
   constructor(xml: string) {
     this.xml = xml;
     this.tokens = Lexx(xml);
+    this.cache = {}; // use a weakmap?
 
     const bindAll = fn => {
       this[fn.name] = fn.bind(this);
     };
   }
 
+  get documentElementToken() {
+    this.cache.documentElementToken =
+      this.cache.documentElementToken ||
+      seekByNodeType(NodeTypes.ELEMENT_NODE, this.tokens);
+    // maybe i should store the index of the token so that,
+    // rather than erasing all cache, I can just invalidate
+    // caches of tokens further along this.tokens.
+    return this.cache.documentElementToken;
+  }
+
   get documentElement() {
-    const token = seekByNodeType(this.tokens, NodeTypes.ELEMENT_NODE);
-    if (!token._element) {
-      token._element = new XMLZeroElement(this.xml, this.tokens, token);
-    }
-    return token._element;
+    this.documentElementToken._element =
+      this.documentElementToken._element ||
+      new XMLZeroElement(this.xml, this.tokens, this.documentElementToken);
+
+    return this.documentElementToken._element;
+  }
+
+  get documentElements() {
+    console.log("dEs");
+    this.cache.documentElements =
+      this.cache.documentElements ||
+      getSiblings(this.documentElementToken, this.tokens, this.xml);
+    console.log("dEs after");
+    return this.cache.documentElements;
   }
 }

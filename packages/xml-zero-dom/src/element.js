@@ -61,7 +61,6 @@ export default class XMLZeroElement {
 
   getAttribute(name: string): ?string {
     let i = this.tokens.indexOf(this.token);
-    console.log("i", i);
     if (i === -1) return;
     let token;
     while (i++) {

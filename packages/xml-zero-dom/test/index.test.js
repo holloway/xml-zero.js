@@ -13,7 +13,8 @@ const html5 = `
   Content of the document......
   </body>
 
-  </html>`;
+  </html>
+  <script src="some proxy inserted tracker.js"></script>`;
 
 var cases = [
   {
@@ -35,6 +36,12 @@ var cases = [
     property: "documentElement.getAttribute",
     arguments: ["html5"],
     result: true
+  },
+  {
+    desc: "HTML5 example",
+    xml: html5,
+    property: "documentElements",
+    result: []
   }
 ];
 
