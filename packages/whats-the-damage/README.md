@@ -149,8 +149,11 @@ Will return data that looks like,
       }
     }
 
+# How does it work?
 
+It forks your scripts and runs them sequentially while monitoring the processes' memory and CPU usage, and duration.
 
-Nothing much here..
+See the test file for an example of usage that uses `await DamageOf(`...
+
 
 Part of [XML-Zero.js](https://github.com/holloway/xml-zero.js)

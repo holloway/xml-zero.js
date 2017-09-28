@@ -2,7 +2,7 @@
   "name": "whats-the-damage",
   "description":
     "What's the damage? ...of running that script in CPU and memory usage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [
     "benchmark",
     "cpu",
@@ -22,7 +22,8 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/holloway/xml-zero.js/"
+    "url":
+      "https://github.com/holloway/xml-zero.js/tree/master/packages/whats-the-damage"
   },
   "//": [
     "babel-cli: needed for building",
