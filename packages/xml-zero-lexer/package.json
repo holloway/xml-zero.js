@@ -6,7 +6,8 @@
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
-    "test": "jest"
+    "test": "jest",
+    "flow": "flow"
   },
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
@@ -23,6 +24,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.26.0",
+    "flow-bin": "^0.55.0",
     "jest": "^21.0.2"
   },
   "module": "./src/index.js",
@@ -39,6 +41,13 @@
         }
       ]
     ],
-    "plugins": [["transform-object-rest-spread", { "useBuiltIns": true }]]
+    "plugins": [
+      [
+        "transform-object-rest-spread",
+        {
+          "useBuiltIns": true
+        }
+      ]
+    ]
   }
 }

@@ -23,6 +23,9 @@ import type {
 const harnessPath = path.join(__dirname, "./harness.js");
 
 const forker = (script: string | Array<string>, opts: DamageOptions) => {
+  if (global.gc) {
+    global.gc(); // attempt to free any memory before forking
+  }
   const args = Array.isArray(script) ? script : [script];
   const timeStart = process.hrtime();
   const forkee = fork(harnessPath, args, { silent: true });
@@ -70,12 +73,20 @@ const forker = (script: string | Array<string>, opts: DamageOptions) => {
       };
       watchPid();
 
+      const messageToString = data =>
+        data instanceof Buffer ? data.toString("utf8") : data;
+
       forkee.stdout.on("data", data => {
-        console.log("stdout from", script, "(ignoring): ", data);
+        console.log(
+          "stdout from",
+          script,
+          "(ignoring): ",
+          messageToString(data)
+        );
       });
 
       forkee.stderr.on("data", data => {
-        console.log("stderr from", script, "(failing)", data);
+        console.log("stderr from", script, "(failing)", messageToString(data));
         reject({ error: data });
       });
 
@@ -87,7 +98,10 @@ const forker = (script: string | Array<string>, opts: DamageOptions) => {
             time: parseFloat(duration.join(".")),
             memory: memoryDiff(messages.memoryStart, messages.memoryEnd),
             cpu: messages.cpuUsageEnd,
-            snapshots,
+            snapshot: {
+              everyMilliseconds: opts.snapshotEveryMilliseconds,
+              snapshots
+            },
             exitCode
           });
         }, opts.snapshotEveryMilliseconds); // wait until any snapshot might finish
@@ -136,7 +150,21 @@ const averageDamagesRows = (damagesRows: DamagesRows): AverageDamages =>
       heapUsed: getAverages(damagesRows.map(d => d[i].memory.heapUsed)),
       external: getAverages(damagesRows.map(d => d[i].memory.external))
     },
-    snapshots: damagesRows.map(d => d[i].snapshots)
+    snapshot: {
+      everyMilliseconds: damagesRows[0].everyMilliseconds, // constant, no need to average
+      snapshots: damageResponse.snapshot.snapshots.map((d, snapshotIndex) => ({
+        cpu: getAverages(
+          damagesRows.map(d => d[i].snapshot.snapshots[snapshotIndex].cpu)
+        ),
+        memory: getAverages(
+          damagesRows.map(d => d[i].snapshot.snapshots[snapshotIndex].memory)
+        ),
+        time: getAverages(
+          damagesRows.map(d => d[i].snapshot.snapshots[snapshotIndex].time)
+        )
+      }))
+    },
+    exitCode: damageResponse.exitCode
   }));
 
 const getAverages = (values: Array<number>): AverageDamageValue => ({
@@ -156,6 +184,14 @@ const defaultOptions: DamageOptions = {
   }
 };
 
+export const getEnvironment = () => ({
+  versions: process.versions,
+  arch: os.arch(),
+  cpus: os.cpus(),
+  totalmem: os.totalmem(),
+  type: os.type()
+});
+
 const DamageOf = async (
   scripts: DamageScripts,
   options: DamageOptions
@@ -164,26 +200,14 @@ const DamageOf = async (
     ...defaultOptions,
     ...options
   };
-  const meta = {
-    versions: process.versions,
-    arch: os.arch(),
-    cpus: os.cpus(),
-    totalmem: os.totalmem(),
-    type: os.type()
-  };
 
   const damagesRows = [];
   for (let i = 0; i < opts.repeat; i++) {
-    opts.progress(`Attempt #${i}`);
     damagesRows.push(await runScriptsOnce(scripts, opts));
+    opts.progress("Test loop", i);
   }
 
-  const averageDamages = averageDamagesRows(damagesRows);
-
-  return {
-    damages: averageDamages,
-    meta
-  };
+  return averageDamagesRows(damagesRows);
 };
 
 export default DamageOf;

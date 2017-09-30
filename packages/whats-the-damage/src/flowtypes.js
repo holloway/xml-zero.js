@@ -20,7 +20,10 @@ export type Damage = {
     user: number,
     system: number
   },
-  snapshots: Snapshots,
+  snapshot: {
+    everyMilliseconds: number,
+    snapshots: Snapshots
+  },
   exitCode: number
 };
 

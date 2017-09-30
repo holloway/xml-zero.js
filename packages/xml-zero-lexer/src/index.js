@@ -1,3 +1,4 @@
+// @flow
 export const NodeTypes = {
   XML_DECLARATION: 0, // unofficial
   // Most XML parsers ignore this but because I'm parsing it I may as well include it.

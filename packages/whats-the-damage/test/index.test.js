@@ -4,14 +4,16 @@ import { isEqual } from "lodash";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
-const t = (filename: string) => path.join(__dirname, filename);
+const fullPath = (filename: string) => path.resolve(__dirname, filename);
 
 describe("DamageOf", async () =>
   test("Sleeper", async () => {
-    const scripts = [t("sleeper.js"), t("sleeper.js")];
-    const results = await DamageOf(scripts);
+    const damages = await DamageOf([
+      fullPath("./sleeper.js")
+      //      fullPath("./fibonacci.js")
+    ]);
 
-    console.log(JSON.stringify(results, null, 2));
-    expect(results.damages[0].time.mean).toBeGreaterThan(5);
-    expect(results.damages[0].time.mean).toBeLessThan(7);
+    console.log(JSON.stringify(damages, null, 2));
+    expect(damages[0].time.mean).toBeGreaterThan(5);
+    expect(damages[0].time.mean).toBeLessThan(7);
   }));
