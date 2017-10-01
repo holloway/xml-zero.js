@@ -70,7 +70,7 @@ So if you just want to see how long (on average) your script takes to run you co
 
 # How does it work?
 
-It forks your scripts and runs them sequentially while monitoring the processes' memory and CPU usage, and duration.
+It forks your scripts and runs them sequentially while monitoring the processes' memory, CPU usage, and duration.
 
 # API
 
@@ -113,7 +113,9 @@ Returns an object that looks like,
       type: os.type()
     }
 
-Useful for distinguishing benchmarks across different machines. See [Node.js `os`](https://nodejs.org/api/os.html) for more.
+Useful for distinguishing benchmarks across different machines.
+
+See the Node.js docs for [`process`](https://nodejs.org/api/process.html) and [`os`](https://nodejs.org/api/os.html) for more.
 
 
 
