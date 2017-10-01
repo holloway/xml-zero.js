@@ -1,6 +1,6 @@
 # What's the Damage? ...of running that script in time, CPU and memory usage
 
-Runs scripts and benchmarks their execution time, CPU usage, and memory usage by running each script many times, and returning a benchmark of averages (max/min/mean/median/standard deviation).
+Runs scripts and benchmarks their execution time, CPU usage, and memory usage by running each script many times, and returning a average of all results.
 
 Install:
 
@@ -19,14 +19,7 @@ Usage:
 
 (because it's a promise you can `await` the results too of course)
 
-The promise will return an array of results,
-
-     [
-       SCRIPT_RESULT,
-       SCRIPT_RESULT,
-     ]
-
-Where SCRIPT_RESULT looks like,
+The promise will return an array of results, each of which look like...
 
     {
       "time": AVERAGE,
@@ -59,7 +52,7 @@ Where SCRIPT_RESULT looks like,
       "exitCode": 0
     }
     
-Where AVERAGE is a statisitical analysis of multiple executions of your script (`options.repeat`), and this AVERAGE object looks like,
+AVERAGE is a statisitical analysis of multiple executions of your script (`options.repeat`) and this looks like,
 
     {
       "mean": 5.584533965,

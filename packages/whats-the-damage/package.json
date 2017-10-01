@@ -2,7 +2,7 @@
   "name": "whats-the-damage",
   "description":
     "What's the damage? ...of running that script in real time, CPU time, and memory usage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "keywords": [
     "benchmark",
     "cpu",
@@ -10,7 +10,9 @@
     "ram",
     "damage",
     "flowtype",
-    "typing"
+    "typing",
+    "profile",
+    "profiling"
   ],
   "scripts": {
     "build": "babel src --out-dir build",
