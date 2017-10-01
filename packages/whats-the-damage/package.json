@@ -2,7 +2,7 @@
   "name": "whats-the-damage",
   "description":
     "What's the damage? ...of running that script in real time, CPU time, and memory usage",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "keywords": [
     "benchmark",
     "cpu",

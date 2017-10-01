@@ -13,8 +13,8 @@ Usage:
     DamageOf([
       '/path/to/script1.js',
       '/path/to/script2.js'
-    ]).then(results => {
-        console.log(results);
+    ]).then(damages => {
+        console.log(damages);
     })
 
 (because it's a promise you can `await` the results too of course)
@@ -49,10 +49,11 @@ The promise will return an array of results, each of which look like...
           ...
         ]
       },
-      "exitCode": 0
+      "exitCode": 0,
+      "repeat": 10
     }
     
-AVERAGE is a statisitical analysis of multiple executions of your script (`options.repeat`) and this looks like,
+AVERAGE is a statisitical analysis of multiple executions of your script which looks like,
 
     {
       "mean": 5.584533965,
@@ -64,8 +65,8 @@ AVERAGE is a statisitical analysis of multiple executions of your script (`optio
 
 So if you just want to see how long (on average) your script takes to run you could...
 
-    const results = await DamageOf(['/path/to/script1.js']);
-    console.log(results[0].time.mean);
+    const damages = await DamageOf(['/path/to/script1.js']);
+    console.log(damages[0].time.mean);
 
 # How does it work?
 
@@ -73,13 +74,13 @@ It forks your scripts and runs them sequentially while monitoring the processes'
 
 # API
 
-## DamageOf (default export)
+## DamageOf
 
-  DamageOf( [fullPath1, fullPath2], [OPTIONS]);
+    DamageOf(pathsArray, OPTIONS);
 
 I've already explained the first argument (an array of full script paths).
 
-OPTIONS is an optional object that is merged with default options, which are
+OPTIONS is an optional object that is merged with default options, which are,
 
     async: false, // Boolean.
                   // Running tests in parallel will cause eratic results.
@@ -104,19 +105,16 @@ OPTIONS is an optional object that is merged with default options, which are
 
 Returns an object that looks like,
 
-  {
-    versions: process.versions,
-    arch: os.arch(),
-    cpus: os.cpus(),
-    totalmem: os.totalmem(),
-    type: os.type()
-  }
+    {
+      versions: process.versions,
+      arch: os.arch(),
+      cpus: os.cpus(),
+      totalmem: os.totalmem(),
+      type: os.type()
+    }
 
-Useful for distinguishing benchmarks across different machines. See [Node.js os](https://nodejs.org/api/os.html) for more.
+Useful for distinguishing benchmarks across different machines. See [Node.js `os`](https://nodejs.org/api/os.html) for more.
 
-# The name "Damage"?
-
-I just liked the name of [Damage](https://www.npmjs.com/package/damage) which is an abandoned project. No source code is shared between the projects.
 
 
 `whats-the-damage` is part of the [XML-Zero.js](https://github.com/holloway/xml-zero.js) project.

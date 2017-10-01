@@ -20,6 +20,15 @@ import type {
   DamageOptions
 } from "./flowtypes";
 
+/*
+ * HELLO READER OF SOURCE CODE
+ * 
+ * The two interesting functions in here are the default export
+ * at the very bottom of this file called DamageOf
+ *
+ * And forker which is just below this. 
+ */
+
 const harnessPath = path.join(__dirname, "./harness.js");
 
 const forker = (script: string | Array<string>, opts: DamageOptions) => {
@@ -137,7 +146,10 @@ const runScriptsOnce = async (
   }
 };
 
-const averageDamagesRows = (damagesRows: DamagesRows): AverageDamages =>
+const averageDamagesRows = (
+  damagesRows: DamagesRows,
+  options: DamageOptions
+): AverageDamages =>
   damagesRows[0].map((damageResponse, i) => ({
     time: getAverages(damagesRows.map(d => d[i].time)),
     cpu: {
@@ -151,7 +163,7 @@ const averageDamagesRows = (damagesRows: DamagesRows): AverageDamages =>
       external: getAverages(damagesRows.map(d => d[i].memory.external))
     },
     snapshot: {
-      everyMilliseconds: damagesRows[0].everyMilliseconds, // constant, no need to average
+      everyMilliseconds: damageResponse.snapshot.everyMilliseconds, // constant, no need to average
       snapshots: damageResponse.snapshot.snapshots.map((d, snapshotIndex) => ({
         cpu: getAverages(
           damagesRows.map(d => d[i].snapshot.snapshots[snapshotIndex].cpu)
@@ -164,7 +176,8 @@ const averageDamagesRows = (damagesRows: DamagesRows): AverageDamages =>
         )
       }))
     },
-    exitCode: damageResponse.exitCode
+    exitCode: damageResponse.exitCode,
+    repeat: options.repeat
   }));
 
 const getAverages = (values: Array<number>): AverageDamageValue => ({
@@ -207,7 +220,7 @@ const DamageOf = async (
     if (opts.progress) opts.progress("Test loop", i);
   }
 
-  return averageDamagesRows(damagesRows);
+  return averageDamagesRows(damagesRows, opts);
 };
 
 export default DamageOf;
