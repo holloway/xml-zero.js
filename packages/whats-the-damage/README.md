@@ -1,6 +1,6 @@
 # What's the Damage? ...of running that script in time, CPU and memory usage
 
-Runs scripts and benchmarks their execution time, CPU usage, and memory usage by running each script many times, and returning a average of all results.
+Runs scripts and benchmarks their execution time, CPU usage, and memory usage by running each script many times, and returning an average of all results.
 
 Install:
 
