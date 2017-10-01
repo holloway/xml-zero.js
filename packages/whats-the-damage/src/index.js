@@ -178,7 +178,7 @@ const getAverages = (values: Array<number>): AverageDamageValue => ({
 const defaultOptions: DamageOptions = {
   async: false, // running tests in parallel will cause eratic stats. not recommended.
   snapshotEveryMilliseconds: 1000,
-  repeat: 2,
+  repeat: 10,
   progress: (...args) => {
     console.log(...args);
   }
@@ -204,7 +204,7 @@ const DamageOf = async (
   const damagesRows = [];
   for (let i = 0; i < opts.repeat; i++) {
     damagesRows.push(await runScriptsOnce(scripts, opts));
-    opts.progress("Test loop", i);
+    if (opts.progress) opts.progress("Test loop", i);
   }
 
   return averageDamagesRows(damagesRows);

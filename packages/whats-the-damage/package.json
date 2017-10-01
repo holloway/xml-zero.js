@@ -1,8 +1,8 @@
 {
   "name": "whats-the-damage",
   "description":
-    "What's the damage? ...of running that script in CPU and memory usage",
-  "version": "1.0.2",
+    "What's the damage? ...of running that script in real time, CPU time, and memory usage",
+  "version": "2.0.0",
   "keywords": [
     "benchmark",
     "cpu",

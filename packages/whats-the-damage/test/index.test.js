@@ -8,12 +8,7 @@ const fullPath = (filename: string) => path.resolve(__dirname, filename);
 
 describe("DamageOf", async () =>
   test("Sleeper", async () => {
-    const damages = await DamageOf([
-      fullPath("./sleeper.js")
-      //      fullPath("./fibonacci.js")
-    ]);
-
-    console.log(JSON.stringify(damages, null, 2));
+    const damages = await DamageOf([fullPath("./sleeper.js")]);
     expect(damages[0].time.mean).toBeGreaterThan(5);
     expect(damages[0].time.mean).toBeLessThan(7);
   }));
