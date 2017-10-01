@@ -53,7 +53,7 @@ The promise will return an array of results, each of which look like...
       "repeat": 10
     }
     
-AVERAGE is a statisitical analysis of multiple executions of your script which looks like,
+AVERAGE is a statistical analysis of multiple executions of your script which looks like,
 
     {
       "mean": 5.584533965,
