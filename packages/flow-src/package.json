@@ -1,31 +1,25 @@
 {
-  "name": "whats-the-damage",
-  "description":
-    "What's the damage? ...of running that script in real time, CPU time, and memory usage",
-  "version": "2.0.3",
-  "keywords": [
-    "benchmark",
-    "cpu",
-    "memory",
-    "ram",
-    "damage",
-    "flowtype",
-    "typing",
-    "profile",
-    "profiling"
-  ],
+  "name": "flow-src",
+  "description": "Flow typing that ignores /node_modules/ ",
+  "version": "0.0.4",
+  "keywords": ["flow", "flowtype", "filter", "ignore", "node_moduiles"],
   "scripts": {
-    "build": "babel src --out-dir build",
+    "build":
+      "mkdir ./build/bin && cp ./src/bin/cli.js ./build/bin && babel src --out-dir ./build",
     "prepublishOnly": "npm run build",
     "test": "jest",
-    "flow": "flow"
+    "flow": "flow",
+    "flow-src": "./bin/cli.js"
+  },
+  "bin": {
+    "flow-src": "./bin/cli.js"
   },
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url":
-      "https://github.com/holloway/xml-zero.js/tree/master/packages/whats-the-damage"
+      "https://github.com/holloway/xml-zero.js/tree/master/packages/flow-src"
   },
   "//": [
     "babel-cli: needed for building",
@@ -36,7 +30,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.26.0",
-    "flow-bin": "^0.55.0",
+    "flow-bin": "^0.56.0",
     "jest": "^21.0.2"
   },
   "module": "./src/index.js",
@@ -63,7 +57,6 @@
     ]
   },
   "dependencies": {
-    "pidusage": "^1.1.6",
-    "stats-lite": "^2.1.0"
+    "chalk": "^2.1.0"
   }
 }
