@@ -1,7 +1,6 @@
 {
   "name": "xml-zero-lexer",
-  "description":
-    "Friendly and forgiving HTML5/XML5 lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
+  "description": "Friendly and forgiving HTML5/XML5 lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
   "version": "1.0.7",
   "scripts": {
     "build": "babel src --out-dir build",
@@ -23,6 +22,7 @@
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
+    "babel-preset-flow": "^6.23.0",
     "babel-register": "^6.26.0",
     "flow-bin": "^0.55.0",
     "jest": "^21.0.2"
