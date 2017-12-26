@@ -1,0 +1,56 @@
+{
+  "name": "xml-zero-beautify",
+  "description": "Beautifies HTML, XML, and JSX",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "babel src --out-dir build",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "flow": "flow"
+  },
+  "author": "Matthew Holloway",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holloway/xml-zero.js/"
+  },
+  "//": [
+    "babel-cli: needed for building",
+    "babel-register: needed for testing via Jest"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-flow": "^6.23.0",
+    "babel-register": "^6.26.0",
+    "flow-bin": "^0.55.0",
+    "jest": "^21.0.2"
+  },
+  "module": "./src/index.js",
+  "main": "./build/index.js",
+  "babel": {
+    "presets": [
+      "flow",
+      [
+        "env",
+        {
+          "targets": {
+            "node": "4"
+          }
+        }
+      ]
+    ],
+    "plugins": [
+      [
+        "transform-object-rest-spread",
+        {
+          "useBuiltIns": true
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "xml-zero-lexer": "^1.0.9"
+  }
+}
