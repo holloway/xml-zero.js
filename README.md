@@ -11,7 +11,7 @@ A different technique would be to retain the original string and generate an ind
 ## Features
 * Fault tolerant like HTML5/[XML5](https://github.com/Ygg01/xml5_draft).
   * Valueless-attributes like HTML5 / XML5 eg &lt;input *multiple* type=file&gt;
-  * Attribute value *and* attribute names may be quoted (E.g. &lt;tag "some key"=false/&gt; )
+  * Attribute values may be quoted (E.g. &lt;tag "some key"=false/&gt; ) or not
   * [React JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) attributes and in text (not executed of course, but they're parsed as distinct node types).
   * Multiple root nodes. Doesn't care about well-formedness. <abbr title="garbage in ➜ garbage out">GIGO</abbr>.
 * Minimising memory use through Zero-Copy techniques.
