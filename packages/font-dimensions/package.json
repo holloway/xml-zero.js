@@ -1,12 +1,10 @@
 {
-  "name": "xml-zero-lexer",
-  "description": "Friendly and forgiving HTML5/XML5 lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "1.0.9",
+  "name": "font-dimensions",
+  "version": "0.0.1",
   "scripts": {
-    "build": "babel src --out-dir build",
+    "build": "babel src --out-file build/index.js",
     "prepublishOnly": "npm run build",
-    "test": "jest",
-    "flow": "flow"
+    "test": "jest"
   },
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
@@ -24,8 +22,9 @@
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
     "babel-register": "^6.26.0",
-    "flow-bin": "^0.55.0",
-    "jest": "^21.0.2"
+    "benchmark": "^2.1.4",
+    "jest": "^21.0.2",
+    "memwatch-next": "^0.3.0"
   },
   "module": "./src/index.js",
   "main": "./build/index.js",

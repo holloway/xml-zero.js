@@ -38,8 +38,8 @@ const closeTag = (
   inElement: boolean,
   useOptions: Options
 ) => {
-  if (inElement) {
-    let b = ">";
+  if (inElement !== false) {
+    let b = `${inElement !== NodeTypes.ELEMENT_NODE ? "?" : ""}>`;
     if (useOptions.beautify) b += "\n";
     return b;
   }
@@ -63,23 +63,43 @@ const Beautify = (xml: string, options: Options) => {
     const token = tokens[i];
     switch (token[0]) {
       case NodeTypes.XML_DECLARATION: {
-        b += `<?xml?>`;
+        b += "<?xml";
+        inElement = NodeTypes.XML_DECLARATION;
         break;
       }
       case NodeTypes.ELEMENT_NODE: {
         b += closeTag(xml, token, inElement, useOptions);
         inElement = false;
-        if (useOptions.beautify) b += "  ".repeat(depth.length);
+        if (
+          useOptions.beautify &&
+          tokens[i + 1] &&
+          tokens[i + 1][0] !== NodeTypes.CLOSE_ELEMENT
+        ) {
+          b += "  ".repeat(depth.length);
+        }
         depth.push(token.length > 1 ? xml.substring(token[1], token[2]) : "");
-        b += `<${depth[depth.length - 1]}`;
-        inElement = true;
+        const tagName = depth[depth.length - 1];
+        b += `<${tagName ? tagName : ""}`;
+        inElement = NodeTypes.ELEMENT_NODE;
         break;
       }
       case NodeTypes.ATTRIBUTE_NODE: {
-        b += ``;
+        if (
+          tokens[i - 1].length === 1 &&
+          tokens[i - 1][0] === NodeTypes.ELEMENT_NODE
+        ) {
+        }
+        b += " "; // element without name
+        b += useOptions.beautify
+          ? xml.substring(token[1], token[2]).trim()
+          : xml.substring(token[1], token[2]);
+        if (token.length > 3) {
+          b += `="${xml.substring(token[3], token[4])}"`;
+        }
         break;
       }
       case NodeTypes.TEXT_NODE: {
+        // self-closing element
         b += closeTag(xml, token, inElement, useOptions);
         inElement = false;
         if (useOptions.beautify) b += "  ".repeat(depth.length);
@@ -98,7 +118,8 @@ const Beautify = (xml: string, options: Options) => {
         break;
       }
       case NodeTypes.PROCESSING_INSTRUCTION_NODE: {
-        b += ``;
+        inElement = NodeTypes.PROCESSING_INSTRUCTION_NODE;
+        b += `<?${xml.substring(token[1], token[2])}`;
         break;
       }
       case NodeTypes.COMMENT_NODE: {
@@ -115,12 +136,16 @@ const Beautify = (xml: string, options: Options) => {
       }
       case NodeTypes.CLOSE_ELEMENT: {
         const tagName = depth.pop();
-        if (useOptions.beautify) {
-          b += "  ".repeat(depth.length);
+        if (inElement === false) {
+          if (useOptions.beautify) {
+            b += "  ".repeat(depth.length);
+          }
+          b += "<";
         }
-        b += `</${tagName}>`;
+        console.log(inElement);
+        b += `/${inElement === false && tagName ? tagName : ""}>`;
         if (useOptions.beautify) b += "\n";
-
+        inElement = false;
         break;
       }
       case NodeTypes.JSX_ATTRIBUTE: {
@@ -130,8 +155,22 @@ const Beautify = (xml: string, options: Options) => {
         )}}`;
         break;
       }
+      case NodeTypes.JSX: {
+        if (useOptions.beautify) {
+          b += "  ".repeat(depth.length);
+        }
+        b += `{${xml.substring(token[1], token[2])}}\n`;
+        break;
+      }
     }
   }
+  if (inElement !== false) {
+    console.log("inElement1", inElement, b);
+    b += closeTag(xml, undefined, inElement, useOptions);
+    console.log("inElement2", inElement, b);
+  }
+
+  console.log(tokens, b);
   return b;
 };
 

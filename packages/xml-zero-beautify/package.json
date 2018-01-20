@@ -1,7 +1,7 @@
 {
   "name": "xml-zero-beautify",
   "description": "Beautifies HTML, XML, and JSX",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
