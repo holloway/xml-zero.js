@@ -431,6 +431,51 @@ var cases = [
     desc: "Weird attribute name",
     xml: "<a xml::lang='b'/>",
     beautified: '<a xml::lang="b"/>\n'
+  },
+  {
+    desc: "Script tag can be self-closing in XML mode",
+    xml: "<script/>",
+    beautified: "<script/>\n"
+  },
+  {
+    desc: "Script tag shouldn't be self-closing when in HTML mode",
+    xml: "<script/>",
+    html: true,
+    beautified: "<script>\n</script>\n"
+  },
+  {
+    desc:
+      "Script tag shouldn't be self-closing when in HTML mode with attribute",
+    xml: "<script attr/>",
+    html: true,
+    beautified: "<script attr>\n</script>\n"
+  },
+  {
+    desc:
+      "Script tag shouldn't be self-closing when in HTML mode with attribute with different inner text",
+    xml: "<script attr> </script>",
+    html: true,
+    beautified: "<script attr>\n</script>\n"
+  },
+  {
+    desc:
+      "Script tag shouldn't be self-closing when in HTML mode with attribute with no inner text",
+    xml: "<script attr></script>",
+    html: true,
+    beautified: "<script attr>\n</script>\n"
+  },
+  {
+    desc: "Script tag shouldn't be self-closing",
+    xml: "<script></script>",
+    html: true,
+    beautified: "<script>\n</script>\n"
+  },
+  {
+    desc:
+      "Script tag shouldn't be self-closing when in HTML mode with attribute",
+    xml: "<script attr> var what; </script>",
+    html: true,
+    beautified: "<script attr>\n  var what;\n</script>\n"
   }
 ];
 
@@ -439,7 +484,10 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml.replace(/\n/g, "\\n")}`, async () => {
       let result;
       try {
-        result = Beautify(eachCase.xml, { jsx: !!eachCase.jsx });
+        result = Beautify(eachCase.xml, {
+          jsx: !!eachCase.jsx,
+          html: !!eachCase.html
+        });
       } catch (e) {
         console.log(e);
       }

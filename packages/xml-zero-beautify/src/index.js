@@ -23,12 +23,14 @@ NodeTypes:
 
 type Options = {
   jsx: boolean,
-  beautify: boolean
+  beautify: boolean,
+  html: boolean
 };
 
 const defaultOptions = {
   jsx: false,
-  beautify: true // false means it won't format with whitespace, it will just print
+  beautify: true, // false means it won't format with whitespace, it will just print,
+  html: false
 };
 
 type Token = Array<number>;
@@ -67,6 +69,8 @@ const findIndexReverse = (
   }
 };
 
+const HTML_NO_SHORTHAND = ["script", "a"];
+
 const Beautify = (xml: string, options: Options) => {
   "use strict";
   const useOptions = {
@@ -74,7 +78,7 @@ const Beautify = (xml: string, options: Options) => {
     ...options
   };
 
-  const tokens = Lexx(xml, { jsx: !!options.jsx });
+  const tokens = Lexx(xml, { jsx: !!options.jsx, html: useOptions.html });
 
   const depth = [];
   let b = "";
@@ -171,6 +175,15 @@ const Beautify = (xml: string, options: Options) => {
       }
       case NodeTypes.CLOSE_ELEMENT: {
         const tagName = depth.pop();
+        if (
+          useOptions.html &&
+          HTML_NO_SHORTHAND.indexOf(tagName.toLowerCase()) !== -1
+        ) {
+          if (inElement) {
+            b += ">\n";
+          }
+          inElement = false;
+        }
         if (inElement === false) {
           if (useOptions.beautify) {
             b += "  ".repeat(depth.length);
@@ -207,9 +220,6 @@ const Beautify = (xml: string, options: Options) => {
     }
   }
   if (inElement !== false) {
-    if (xml.indexOf("zaz") !== -1) {
-      console.log("inElmeent", inElement, b, tokens);
-    }
     b += closeTag(xml, undefined, inElement, useOptions);
   }
   return b;
