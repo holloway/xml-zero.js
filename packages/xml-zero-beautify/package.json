@@ -1,7 +1,7 @@
 {
   "name": "xml-zero-beautify",
   "description": "Beautifies HTML, XML, and JSX",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -27,7 +27,6 @@
     "flow-bin": "^0.55.0",
     "jest": "^21.0.2"
   },
-  "module": "./src/index.js",
   "main": "./build/index.js",
   "babel": {
     "presets": [
