@@ -538,8 +538,8 @@ var cases = [
     ]
   },
   {
-    desc: "HTML5 example with multiple file input",
-    xml: `<!DOCTYPE html> <p><input type="file" multiple></p> `,
+    desc: "XHTML5 example with multiple file input",
+    xml: `<!DOCTYPE html> <p><input type="file" multiple/></p> `,
     lex: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
@@ -549,7 +549,36 @@ var cases = [
       [NodeTypes.ATTRIBUTE_NODE, 26, 30, 32, 36],
       [NodeTypes.ATTRIBUTE_NODE, 38, 46],
       [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.TEXT_NODE, 52, 54]
+    ]
+  },
+  {
+    desc: "HTML5 equivalent of preceding example with self-closing <input>",
+    xml: `<!DOCTYPE html> <p><input type="file" multiple></p> `,
+    html: true,
+    lex: [
+      [NodeTypes.DOCUMENT_TYPE_NODE],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 14],
+      [NodeTypes.TEXT_NODE, 15, 16],
+      [NodeTypes.ELEMENT_NODE, 17, 18],
+      [NodeTypes.ELEMENT_NODE, 20, 25],
+      [NodeTypes.ATTRIBUTE_NODE, 26, 30, 32, 36],
+      [NodeTypes.ATTRIBUTE_NODE, 38, 46],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT],
       [NodeTypes.TEXT_NODE, 51, 53]
+    ]
+  },
+  {
+    desc: "HTML5 self-closing tags without attributes",
+    xml: `<br><img>`,
+    html: true,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 3],
+      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.ELEMENT_NODE, 5, 8],
+      [NodeTypes.CLOSE_ELEMENT]
     ]
   },
   {
@@ -569,6 +598,11 @@ var cases = [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 29]
     ]
+  },
+  {
+    desc: "Basic JSX spread",
+    xml: "<button {...obj}>",
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 7], [NodeTypes.JSX_ATTRIBUTE, 8, 16]]
   },
   {
     desc: "JSX attribute with nesting",
@@ -666,7 +700,10 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml}`, async () => {
       let result;
       try {
-        result = Lex(eachCase.xml, { jsx: !!eachCase.jsx });
+        result = Lex(eachCase.xml, {
+          jsx: !!eachCase.jsx,
+          html: !!eachCase.html
+        });
       } catch (e) {
         console.log(e);
       }
@@ -676,7 +713,10 @@ describe("lexes", async () =>
         console.log(resolveNodesNumbers(eachCase.xml, result));
         console.log("after");
         try {
-          result = Lex(eachCase.xml, { jsx: !!eachCase.jsx });
+          result = Lex(eachCase.xml, {
+            jsx: !!eachCase.jsx,
+            html: !!eachCase.html
+          });
         } catch (e) {}
         if (result) {
           console.log("Result:", result, " from ", eachCase.xml);

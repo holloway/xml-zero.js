@@ -97,7 +97,7 @@ const seekJSExpression = (xml: string, i: number) => {
     JS_MULTILINE_COMMENT[0][0]
   ];
 
-  let exitAfter = 10000000; // 10MB of expression
+  let exitAfter = 1000000; // At least 10MB of tokens
   while (nesting > 0 && i < xml.length) {
     i++;
     i = seekChar(xml, i, JS_TOKENS);
@@ -200,7 +200,6 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     i++;
     return [i, false, token];
   } else if (xml[i] === "/" && xml[i + 1] === ">") {
-    console.log("self closing", xml[i]);
     return [i, true, token];
   }
 
@@ -231,7 +230,6 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     i++;
   } else {
     // not surrounded by quotes
-    // console.log("quoteless attribute");
     token.push(i);
     i = seekChar(xml, i, [">", ...WHITESPACE]);
     if (xml[i] === ">" && xml[i - 1] === "?") {
@@ -353,6 +351,35 @@ export const onBlackhole = (
   return [i, true, token];
 };
 
+const HTML_SELF_CLOSING_ELEMENTS = [
+  "area",
+  "base",
+  "br",
+  "col",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "command",
+  "keygen",
+  "source"
+];
+
+const onHTMLSelfClosingElement = (
+  xml: string,
+  tokens: Array<Array<number>>
+) => {
+  const token = findLastNodeType(tokens, NodeTypes.ELEMENT_NODE);
+  if (token && token.length > 2) {
+    const tagName = xml.substring(token[1], token[2]).toLowerCase(); // lowercase because HTML elements are case-insensitive
+    if (HTML_SELF_CLOSING_ELEMENTS.indexOf(tagName) !== -1) {
+      return [NodeTypes.CLOSE_ELEMENT];
+    }
+  }
+};
+
 const findLastNodeType = (tokens: Array<Array<number>>, nodeType: number) => {
   for (var i = tokens.length - 1; i >= 0; --i) {
     if (tokens[i][0] === nodeType) return tokens[i];
@@ -363,12 +390,14 @@ const defaultBlackholes = ["script", "style"];
 
 type Options = {
   blackholes: ?Array<string>,
-  jsx: boolean
+  jsx: boolean,
+  html: boolean
 };
 
 const defaultOptions = {
   blackholes: defaultBlackholes,
-  jsx: false
+  jsx: false,
+  html: false
 };
 
 // his divine shadow
@@ -441,7 +470,6 @@ const Lexx = (xml: string, options: ?Options) => {
           }
           break;
         case "/":
-          // console.log("---------- End slash?");
           if (xml[i + 1] === ">") {
             inElement = false;
             [i, inElement, token] = onClose(xml, i, inElement);
@@ -464,6 +492,12 @@ const Lexx = (xml: string, options: ?Options) => {
             [i, inElement, token] = onBlackhole(xml, i, inElement, lastElement);
             tokens.push(token);
           }
+          if (useOptions.html) {
+            token = onHTMLSelfClosingElement(xml, tokens);
+            if (token) {
+              tokens.push(token);
+            }
+          }
           break;
         case " ":
         case "\t":
@@ -474,6 +508,12 @@ const Lexx = (xml: string, options: ?Options) => {
         default:
           [i, inElement, token] = onAttribute(xml, i, inElement);
           tokens.push(token);
+          if (!inElement && useOptions.html) {
+            token = onHTMLSelfClosingElement(xml, tokens);
+            if (token) {
+              tokens.push(token);
+            }
+          }
           break;
       }
     }
