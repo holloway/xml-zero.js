@@ -51,6 +51,6 @@
     ]
   },
   "dependencies": {
-    "xml-zero-lexer": "^1.0.9"
+    "xml-zero-lexer": "^1.1.0"
   }
 }
