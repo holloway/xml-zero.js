@@ -426,11 +426,12 @@ var cases = [
     jsx: false,
     beautified:
       "<button>\n  hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?\n"
+  },
+  {
+    desc: "Weird attribute name",
+    xml: "<a xml::lang='b'/>",
+    beautified: '<a xml::lang="b"/>\n'
   }
-  //   {
-  //     desc: "Weird attribute name",
-  //     xml: "<a xml::lang='b'/>"
-  //   }
 ];
 
 describe("lexes", async () =>
