@@ -1,7 +1,7 @@
 {
   "name": "xml-zero-beautify",
   "description": "Beautifies HTML, XML, and JSX",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -50,6 +50,6 @@
     ]
   },
   "dependencies": {
-    "xml-zero-lexer": "^1.1.0"
+    "xml-zero-lexer": "^1.1.1"
   }
 }
