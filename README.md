@@ -6,7 +6,7 @@ Most markup parsers convert a string of markup into a nested map(hash/dict) of k
 
 A different technique would be to retain the original string and generate an index of string offsets. Because these offsets are just numbers they can be packed more efficiently ([a tutorial on zero-copy approaches](http://roxlu.com/2015/052/building-a-zero-copy-parser)).
 
-**This software is alpha and it doesn't yet work**
+**This software is beta and it doesn't yet work**
 
 ## Features
 * Fault tolerant like HTML5/[XML5](https://github.com/Ygg01/xml5_draft).
@@ -23,18 +23,24 @@ A different technique would be to retain the original string and generate an ind
 
 ## Out of scope
 
-* Complete W3C DOM (at least for now) although we will follow their API naming conventions where possible.
+* Complete W3C DOM (at least for now) although we will follow their API naming conventions where reasonable.
 * HTML5 implied tags (e.g. won't automatically create tags such as &lt;html&gt;, &lt;head&gt;, &lt;tbody&gt;, [...etc](https://www.w3.org/TR/html5/syntax.html#syntax-tag-omission)).
 
 ## Install
 
     npm install xml-zero-lexer
+    
+    npm install xml-zero-beautify
+    
+    npm install whats-the-damage
 
 (more packages to come, but i'm making it modular)
 
 ## Progress
 
-- [x] [Lexer](https://www.npmjs.com/package/xml-zero-lexer) (2.6KB minified and gzipped)
+- [x] [Lexer](https://www.npmjs.com/package/xml-zero-lexer) (2.6KB no dependencies, minified and gzipped)
+- [x] [Beautifier](https://www.npmjs.com/package/xml-zero-beautify) (4KB all dependencies, minified and gzipped)
+- [X] [What's The Damage](https://www.npmjs.com/package/whats-the-damage) benchmarker that measures time/memory/CPU of scripts
 - [ ] A W3C DOM-like API
 - [ ] Editable XML (by way of making new strings and leaving the original untouched, so it's still immutable)
 
