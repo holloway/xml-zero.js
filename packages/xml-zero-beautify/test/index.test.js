@@ -484,14 +484,14 @@ var cases = [
     html: true,
     output: "html",
     beautified:
-      '<span class="b-tag">&lt;script</span> <span class="b-attr-key">attr</span><span class="b-tag">&gt;</span><br/>\n &nbsp;<span class="b-text">var what;</span><br/>\n<span class="b-tag">&lt;</span><span class="b-tag">/</span><span class="b-tag">script</span><span class="b-tag">&gt;</span><br/>\n'
+      '<span class="b-tag-start">&lt;</span><span class="b-tag">script</span> <span class="b-attr-key">attr</span><span class="b-tag-end">&gt;</span><br/>\n &nbsp;<span class="b-text">var what;</span><br/>\n<span class="b-tag-start">&lt;</span><span class="b-tag-end">/</span><span class="b-tag">script</span><span class="b-tag-end">&gt;</span><br/>\n'
   },
   {
     desc: "Format as HTML with Doctype",
     xml: '<!DOCTYPE html><test some="thing"/>',
     output: "html",
     beautified:
-      '<span class="b-doctype">&lt;!DOCTYPE</span> <span class="b-attr-key">html</span><span class="b-tag">&gt;</span><br/>\n<span class="b-tag">&lt;test</span> <span class="b-attr-key">some</span><span class="b-attr-equals">=</span><span class="b-attr-value">&quot;thing&quot;</span><span class="b-tag">/</span><span class="b-tag">&gt;</span><br/>\n'
+      '<span class="b-doctype">&lt;!DOCTYPE</span> <span class="b-attr-key">html</span><span class="b-tag-end">&gt;</span><br/>\n<span class="b-tag-start">&lt;</span><span class="b-tag">test</span> <span class="b-attr-key">some</span><span class="b-attr-equals">=</span><span class="b-attr-value">&quot;thing&quot;</span><span class="b-tag-end">/</span><span class="b-tag-end">&gt;</span><br/>\n'
   },
   {
     desc: "Format as HTML with Doctype with custom prefix",
@@ -499,7 +499,7 @@ var cases = [
     output: "html",
     outputHtmlClassPrefix: "conflict-free-",
     beautified:
-      '<span class="conflict-free-doctype">&lt;!DOCTYPE</span> <span class="conflict-free-attr-key">html</span><span class="conflict-free-tag">&gt;</span><br/>\n<span class="conflict-free-tag">&lt;test</span> <span class="conflict-free-attr-key">custom</span><span class="conflict-free-attr-equals">=</span><span class="conflict-free-attr-value">&quot;thing&quot;</span><span class="conflict-free-tag">/</span><span class="conflict-free-tag">&gt;</span><br/>\n'
+      '<span class="conflict-free-doctype">&lt;!DOCTYPE</span> <span class="conflict-free-attr-key">html</span><span class="conflict-free-tag-end">&gt;</span><br/>\n<span class="conflict-free-tag-start">&lt;</span><span class="conflict-free-tag">test</span> <span class="conflict-free-attr-key">custom</span><span class="conflict-free-attr-equals">=</span><span class="conflict-free-attr-value">&quot;thing&quot;</span><span class="conflict-free-tag-end">/</span><span class="conflict-free-tag-end">&gt;</span><br/>\n'
   }
 ];
 

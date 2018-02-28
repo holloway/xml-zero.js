@@ -2,7 +2,7 @@
   "name": "xml-zero-beautify",
   "description":
     "Friendly and forgiving markup beautifier. Supports HTML, XML, and JSX",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",

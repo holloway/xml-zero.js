@@ -65,7 +65,7 @@ const closeTag = (
       b += "?";
     }
     b += ">";
-    b = format(b, "tag", useOptions);
+    b = format(b, "tag-end", useOptions);
     if (useOptions.beautify) b += format.linebreak;
     return b;
   }
@@ -152,7 +152,8 @@ const Beautify = (xml: string, options: Options) => {
         }
         depth.push(token.length > 1 ? xml.substring(token[1], token[2]) : "");
         const tagName = depth[depth.length - 1];
-        b += format(`<${tagName ? tagName : ""}`, "tag", useOptions);
+        b += format(`<`, "tag-start", useOptions);
+        b += format(`${tagName ? tagName : ""}`, "tag", useOptions);
         inElement = NodeTypes.ELEMENT_NODE;
         break;
       }
@@ -248,7 +249,7 @@ const Beautify = (xml: string, options: Options) => {
           HTML_NO_SHORTHAND.indexOf(tagName.toLowerCase()) !== -1
         ) {
           if (inElement) {
-            b += format(">", "tag", useOptions) + format.linebreak;
+            b += format(">", "tag-end", useOptions) + format.linebreak;
           }
           inElement = false;
         }
@@ -256,12 +257,12 @@ const Beautify = (xml: string, options: Options) => {
           if (useOptions.beautify) {
             b += format.indentation.repeat(depth.length);
           }
-          b += format("<", "tag", useOptions);
+          b += format("<", "tag-start", useOptions);
         }
         if (inElement === NodeTypes.XML_DECLARATION) {
           b += format("?", "data", useOptions);
         } else {
-          b += format("/", "tag", useOptions);
+          b += format("/", "tag-end", useOptions);
         }
 
         b += format(
@@ -269,7 +270,7 @@ const Beautify = (xml: string, options: Options) => {
           "tag",
           useOptions
         );
-        b += format(">", "tag", useOptions);
+        b += format(">", "tag-end", useOptions);
         if (useOptions.beautify) b += format.linebreak;
         inElement = false;
         break;
