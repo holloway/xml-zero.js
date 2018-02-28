@@ -27,10 +27,22 @@ type Options = {
   html: boolean
 };
 
+export const OUTPUT_FORMATS = {
+  plaintext: "plaintext",
+  html: "html"
+};
+
 const defaultOptions = {
   jsx: false,
   beautify: true, // false means it won't format with whitespace, it will just print,
-  html: false
+  html: false, // whether to ensure tags like <script> aren't printed as <script/>.
+  // HTML5 allows self-closing <img /> cite https://www.w3.org/TR/html5/syntax.html#start-tags
+  // as summarised in this Stackoverflow:
+  //   "The slash at the end of the start tag is allowed, but has no meaning.
+  //    It is just syntactic sugar for people (and syntax highlighters) that are addicted to XML."
+  //  -- https://stackoverflow.com/a/3558200
+  output: OUTPUT_FORMATS.plaintext, // plaintext or html,
+  outputHtmlClassPrefix: "b-"
 };
 
 type Token = Array<number>;
@@ -39,7 +51,8 @@ const closeTag = (
   xml: string,
   token: Token,
   inElement: boolean,
-  useOptions: Options
+  useOptions: Options,
+  format: Function
 ) => {
   if (inElement !== false) {
     let b = "";
@@ -52,7 +65,8 @@ const closeTag = (
       b += "?";
     }
     b += ">";
-    if (useOptions.beautify) b += "\n";
+    b = format(b, "tag", useOptions);
+    if (useOptions.beautify) b += format.linebreak;
     return b;
   }
   return "";
@@ -69,7 +83,34 @@ const findIndexReverse = (
   }
 };
 
+const ESCAPE_MAPPING = {
+  "<": "&lt;",
+  ">": "&gt;",
+  "&": "&amp;",
+  '"': "&quot;",
+  "'": "&apos;"
+};
+
+export const escape = (text: string) =>
+  text.replace(
+    /([<>&'"])/g,
+    (match: string, char: string) => ESCAPE_MAPPING[char]
+  );
+
 const HTML_NO_SHORTHAND = ["script", "a"];
+
+const formatAsHTML = (text: string, type: string, options: Options) =>
+  text
+    ? `<span class="${options.outputHtmlClassPrefix}${type}">${escape(
+        text
+      )}</span>`
+    : text;
+formatAsHTML.indentation = " &nbsp;";
+formatAsHTML.linebreak = "<br/>\n";
+
+const formatAsPlaintext = (text: string) => text;
+formatAsPlaintext.indentation = "  ";
+formatAsPlaintext.linebreak = "\n";
 
 const Beautify = (xml: string, options: Options) => {
   "use strict";
@@ -77,6 +118,11 @@ const Beautify = (xml: string, options: Options) => {
     ...defaultOptions,
     ...options
   };
+
+  const format =
+    useOptions.output === OUTPUT_FORMATS.plaintext
+      ? formatAsPlaintext
+      : formatAsHTML;
 
   const tokens = Lexx(xml, { jsx: !!options.jsx, html: useOptions.html });
 
@@ -88,15 +134,15 @@ const Beautify = (xml: string, options: Options) => {
     const token = tokens[i];
     switch (token[0]) {
       case NodeTypes.XML_DECLARATION: {
-        b += "<?xml";
+        b += format("<?xml", "data", useOptions);
         inElement = NodeTypes.XML_DECLARATION;
         break;
       }
       case NodeTypes.ELEMENT_NODE: {
-        b += closeTag(xml, token, inElement, useOptions);
+        b += closeTag(xml, token, inElement, useOptions, format);
         inElement = false;
         if (useOptions.beautify && depth.length > 0) {
-          b += "  ".repeat(
+          b += format.indentation.repeat(
             tokens[i + 1] &&
             tokens[i + 1][0] === NodeTypes.CLOSE_ELEMENT &&
             token.length === 1
@@ -106,14 +152,14 @@ const Beautify = (xml: string, options: Options) => {
         }
         depth.push(token.length > 1 ? xml.substring(token[1], token[2]) : "");
         const tagName = depth[depth.length - 1];
-        b += `<${tagName ? tagName : ""}`;
+        b += format(`<${tagName ? tagName : ""}`, "tag", useOptions);
         inElement = NodeTypes.ELEMENT_NODE;
         break;
       }
       case NodeTypes.ATTRIBUTE_NODE: {
         b += " "; // attributes are preceded by a space
         const value = xml.substring(token[1], token[2]);
-        b +=
+        b += format(
           value.match(/\s/) ||
           (inElement === NodeTypes.DOCUMENT_TYPE_NODE &&
             findIndexReverse(i, tokens, NodeTypes.DOCUMENT_TYPE_NODE) > 2) || // Document Types have particular attribute order and escaping
@@ -122,55 +168,77 @@ const Beautify = (xml: string, options: Options) => {
           (inElement === NodeTypes.NOTATION_NODE &&
             findIndexReverse(i, tokens, NodeTypes.NOTATION_NODE) > 2)
             ? `"${value}"`
-            : value;
+            : value,
+          "attr-key",
+          useOptions
+        );
         if (token.length > 3) {
-          b += `="${xml.substring(token[3], token[4])}"`;
+          b += format("=", "attr-equals", useOptions);
+          b += format(
+            `"${xml.substring(token[3], token[4])}"`,
+            "attr-value",
+            useOptions
+          );
         }
         break;
       }
       case NodeTypes.TEXT_NODE: {
-        b += closeTag(xml, token, inElement, useOptions);
+        b += closeTag(xml, token, inElement, useOptions, format);
         inElement = false;
         let text = xml.substring(token[1], token[2]);
         if (text.trim().length === 0) break; // exit early if it's an empty text node
 
         if (useOptions.beautify) {
           b +=
-            "  ".repeat(depth.length) +
-            text.trim().replace(/[\n\r]/g, " ") +
-            "\n";
+            format.indentation.repeat(depth.length) +
+            format(text.trim().replace(/[\n\r]/g, " "), "text", useOptions) +
+            format.linebreak;
         } else {
-          b += text;
+          b += format(text, "text", useOptions);
         }
         break;
       }
       case NodeTypes.CDATA_SECTION_NODE: {
-        b += `<![CDATA[${xml.substring(token[1], token[2])}]]>\n`;
+        b +=
+          format(
+            `<![CDATA[${xml.substring(token[1], token[2])}]]>`,
+            "data",
+            useOptions
+          ) + format.linebreak;
         break;
       }
       case NodeTypes.ENTITY_NODE: {
         inElement = NodeTypes.ENTITY_NODE;
-        b += "<!ENTITY";
+        b += format("<!ENTITY", "data", useOptions);
         break;
       }
       case NodeTypes.PROCESSING_INSTRUCTION_NODE: {
         inElement = NodeTypes.PROCESSING_INSTRUCTION_NODE;
-        b += `<?${xml.substring(token[1], token[2])}`;
+        b += format(
+          `<?${xml.substring(token[1], token[2])}`,
+          "data",
+          useOptions
+        );
         break;
       }
       case NodeTypes.COMMENT_NODE: {
-        if (useOptions.beautify) b += "  ".repeat(depth.length);
-        b += `<!--${xml.substring(token[1], token[2])}-->\n`;
+        if (useOptions.beautify) b += format.indentation.repeat(depth.length);
+        b +=
+          format(
+            `<!--${xml.substring(token[1], token[2])}-->`,
+            "data",
+            useOptions
+          ) + format.linebreak;
         break;
       }
       case NodeTypes.DOCUMENT_TYPE_NODE: {
         inElement = NodeTypes.DOCUMENT_TYPE_NODE;
-        b += "<!DOCTYPE";
+        b += format("<!DOCTYPE", "doctype", useOptions);
         break;
       }
       case NodeTypes.NOTATION_NODE: {
         inElement = NodeTypes.NOTATION_NODE;
-        b += "<!NOTATION";
+        b += format("<!NOTATION", "data", useOptions);
         break;
       }
       case NodeTypes.CLOSE_ELEMENT: {
@@ -180,47 +248,60 @@ const Beautify = (xml: string, options: Options) => {
           HTML_NO_SHORTHAND.indexOf(tagName.toLowerCase()) !== -1
         ) {
           if (inElement) {
-            b += ">\n";
+            b += format(">", "tag", useOptions) + format.linebreak;
           }
           inElement = false;
         }
         if (inElement === false) {
           if (useOptions.beautify) {
-            b += "  ".repeat(depth.length);
+            b += format.indentation.repeat(depth.length);
           }
-          b += "<";
+          b += format("<", "tag", useOptions);
         }
         if (inElement === NodeTypes.XML_DECLARATION) {
-          b += "?";
+          b += format("?", "data", useOptions);
         } else {
-          b += "/";
+          b += format("/", "tag", useOptions);
         }
 
-        b += inElement === false && tagName ? tagName : "";
-        b += ">";
-        if (useOptions.beautify) b += "\n";
+        b += format(
+          inElement === false && tagName ? tagName : "",
+          "tag",
+          useOptions
+        );
+        b += format(">", "tag", useOptions);
+        if (useOptions.beautify) b += format.linebreak;
         inElement = false;
         break;
       }
       case NodeTypes.JSX_ATTRIBUTE: {
         b += " ";
-        b += `${xml.substring(token[1], token[2])}={${xml.substring(
-          token[3],
-          token[4]
-        )}}`;
+        b += format(
+          `${xml.substring(token[1], token[2])}`,
+          "attr-key",
+          useOptions
+        );
+        b += format("=", "attr-equals", useOptions);
+        b += format(
+          `{${xml.substring(token[3], token[4])}}`,
+          "attr-values",
+          useOptions
+        );
         break;
       }
       case NodeTypes.JSX: {
         if (useOptions.beautify) {
-          b += "  ".repeat(depth.length);
+          b += format.indentation.repeat(depth.length);
         }
-        b += `{${xml.substring(token[1], token[2])}}\n`;
+        b +=
+          format(`{${xml.substring(token[1], token[2])}}`, "data", useOptions) +
+          format.linebreak;
         break;
       }
     }
   }
   if (inElement !== false) {
-    b += closeTag(xml, undefined, inElement, useOptions);
+    b += closeTag(xml, undefined, inElement, useOptions, format);
   }
   return b;
 };

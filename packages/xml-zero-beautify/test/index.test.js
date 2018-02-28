@@ -1,4 +1,4 @@
-import Beautify from "../src/index";
+import Beautify, { OUTPUT_FORMATS } from "../src/index";
 
 var cases = [
   {
@@ -476,6 +476,30 @@ var cases = [
     xml: "<script attr> var what; </script>",
     html: true,
     beautified: "<script attr>\n  var what;\n</script>\n"
+  },
+  ,
+  {
+    desc: "Format as HTML",
+    xml: "<script attr> var what; </script>",
+    html: true,
+    output: "html",
+    beautified:
+      '<span class="b-tag">&lt;script</span> <span class="b-attr-key">attr</span><span class="b-tag">&gt;</span><br/>\n &nbsp;<span class="b-text">var what;</span><br/>\n<span class="b-tag">&lt;</span><span class="b-tag">/</span><span class="b-tag">script</span><span class="b-tag">&gt;</span><br/>\n'
+  },
+  {
+    desc: "Format as HTML with Doctype",
+    xml: '<!DOCTYPE html><test some="thing"/>',
+    output: "html",
+    beautified:
+      '<span class="b-doctype">&lt;!DOCTYPE</span> <span class="b-attr-key">html</span><span class="b-tag">&gt;</span><br/>\n<span class="b-tag">&lt;test</span> <span class="b-attr-key">some</span><span class="b-attr-equals">=</span><span class="b-attr-value">&quot;thing&quot;</span><span class="b-tag">/</span><span class="b-tag">&gt;</span><br/>\n'
+  },
+  {
+    desc: "Format as HTML with Doctype with custom prefix",
+    xml: '<!DOCTYPE html><test custom="thing"/>',
+    output: "html",
+    outputHtmlClassPrefix: "conflict-free-",
+    beautified:
+      '<span class="conflict-free-doctype">&lt;!DOCTYPE</span> <span class="conflict-free-attr-key">html</span><span class="conflict-free-tag">&gt;</span><br/>\n<span class="conflict-free-tag">&lt;test</span> <span class="conflict-free-attr-key">custom</span><span class="conflict-free-attr-equals">=</span><span class="conflict-free-attr-value">&quot;thing&quot;</span><span class="conflict-free-tag">/</span><span class="conflict-free-tag">&gt;</span><br/>\n'
   }
 ];
 
@@ -484,10 +508,17 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.xml.replace(/\n/g, "\\n")}`, async () => {
       let result;
       try {
-        result = Beautify(eachCase.xml, {
+        const options = {
           jsx: !!eachCase.jsx,
           html: !!eachCase.html
-        });
+        };
+        if (eachCase.output) {
+          options.output = eachCase.output;
+        }
+        if (eachCase.outputHtmlClassPrefix) {
+          options.outputHtmlClassPrefix = eachCase.outputHtmlClassPrefix;
+        }
+        result = Beautify(eachCase.xml, options);
       } catch (e) {
         console.log(e);
       }
