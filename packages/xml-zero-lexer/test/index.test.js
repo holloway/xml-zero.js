@@ -1,7 +1,7 @@
 import Lex, { NodeTypes, NodeTypeKeys } from "../src/index";
 import { isEqual } from "lodash";
 
-const resolve = (xml: string, token: Array<number>) => {
+export const resolve = (xml: string, token: Array<number>) => {
   if (!token || (token.length - 1) % 2 !== 0)
     return "Invalid 'token' variable: " + token;
   return [
@@ -30,6 +30,15 @@ var cases = [
     desc: "text",
     xml: "text",
     lex: [[NodeTypes.TEXT_NODE, 0, 5]]
+  },
+  {
+    desc: "his divine shadow",
+    xml: "<p>his divine shadow</p>",
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 2],
+      [NodeTypes.TEXT_NODE, 3, 20],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
   },
   {
     desc:
@@ -582,7 +591,8 @@ var cases = [
     ]
   },
   {
-    desc: "HTML script tag followed by text",
+    desc:
+      "HTML script tag followed by text that shouldn't be interpreted as closing tag",
     xml: `<script> var t="</closing>"; </script> `,
     lex: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
@@ -602,7 +612,7 @@ var cases = [
   {
     desc: "Basic JSX spread",
     xml: "<button {...obj}>",
-    lex: [[NodeTypes.ELEMENT_NODE, 1, 7], [NodeTypes.JSX_ATTRIBUTE, 8, 16]]
+    lex: [[NodeTypes.ELEMENT_NODE, 1, 7], [NodeTypes.JSX_ATTRIBUTE, 9, 15]]
   },
   {
     desc: "JSX attribute with nesting",

@@ -186,6 +186,15 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     i = seekString(xml, i, "]>");
     i += 1;
     token.push(i); // end of attribute name
+  } else if (xml[i] === "{") {
+    token.pop(); // scrub default attribute
+    token.push(NodeTypes.JSX_ATTRIBUTE);
+    i++;
+    token.push(i);
+    i--;
+    i = seekJSExpression(xml, i);
+    token.push(i);
+    i++;
   } else {
     token.push(i);
     i = seekChar(xml, i, ["=", "/", ">", ...WHITESPACE]);
