@@ -28,66 +28,110 @@ const resolveNodesNumbers = (css, tokens) => {
 
 var cases = [
   {
-    desc: "1 comment",
+    desc: "comment",
     css: "/* comment */",
     lex: [[NodeTypes.COMMENT_NODE, 2, 11]]
   },
   {
-    desc: "2 selector",
+    desc: "property",
     css: "text",
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4]]
+    lex: [[NodeTypes.PROPERTY_NODE, 0, 4]]
   },
   {
-    desc: "3. selector",
+    desc: "property, whitespace",
     css: "text ", // we exclude whitespace
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4]]
+    lex: [[NodeTypes.PROPERTY_NODE, 0, 4]]
   },
   {
-    desc: "3 comment and text",
+    desc: "comment and property",
     css: "/*comment*/text",
-    lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.SELECTOR_NODE, 11, 15]]
+    lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.PROPERTY_NODE, 11, 15]]
   },
   {
-    desc: "4 comment and whitespace and text",
+    desc: "comment and whitespace and property",
     css: "/*comment*/ text",
-    lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.SELECTOR_NODE, 12, 16]]
+    lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.PROPERTY_NODE, 12, 16]]
   },
   {
-    desc: "5 whitespace comment and whitespace and text",
+    desc: "whitespace, comment, property",
     css: " /*comment*/ text",
-    lex: [[NodeTypes.COMMENT_NODE, 3, 10], [NodeTypes.SELECTOR_NODE, 13, 17]]
+    lex: [[NodeTypes.COMMENT_NODE, 3, 10], [NodeTypes.PROPERTY_NODE, 13, 17]]
   },
   {
-    desc: "6 whitespace text and comment",
+    desc: "Whitespace, property, comment",
     css: " text /*comment*/",
-    lex: [[NodeTypes.SELECTOR_NODE, 1, 5], [NodeTypes.COMMENT_NODE, 8, 15]]
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.COMMENT_NODE, 8, 15]]
   },
   {
-    desc: "7 whitespace text and comment followed by whitespace",
+    desc: "Property then comment then whitespace",
     css: " text /*comment*/ ",
-    lex: [[NodeTypes.SELECTOR_NODE, 1, 5], [NodeTypes.COMMENT_NODE, 8, 15]]
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.COMMENT_NODE, 8, 15]]
   },
   {
-    desc: "8 two texts",
+    desc: "whitespace, one property",
+    css: " text;",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY]]
+  },
+  {
+    desc: "Whitespace then two properties",
     css: " text; text;",
-    lex: [[NodeTypes.SELECTOR_NODE, 1, 5], [NodeTypes.SELECTOR_NODE, 7, 11]]
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY]]
   },
   {
-    desc: "9 two texts",
-    css: " text; text {};",
-    lex: [[NodeTypes.SELECTOR_NODE, 1, 5], [NodeTypes.SELECTOR_NODE, 7, 11], [NodeTypes.CLOSE_RULE]]
+    desc: "Two properties with whitespace",
+    css: " text; text; ",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY]]
   },
-
-  // {
-  //   desc: "whitespace comment and whitespace and text",
-  //   css: " /*comment*/ text; text;",
-  //   lex: [[NodeTypes.COMMENT_NODE, 3, 10], [NodeTypes.SELECTOR_NODE, 13, 18], [NodeTypes.SELECTOR_NODE, 19, 25]]
-  // }
-  // {
-  //   desc: "text",
-  //   css: "/* comment */text",
-  //   lex: [[NodeTypes.COMMENT_NODE, 2, 11], [NodeTypes.COMMENT_NODE, 2, 11]]
-  // }
+  {
+    desc: "One property, one selector",
+    css: " text; text{",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 11], [NodeTypes.OPEN_RULE]]
+  },
+  {
+    desc: "One property, one selector with a comment in the middle",
+    css: " text; te/* comment */xt{",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 8], [NodeTypes.COMMENT_NODE, 11, 20], [NodeTypes.SELECTOR_NODE, 22, 24], [NodeTypes.OPEN_RULE]]
+  },
+  {
+    desc: "Two properties, the second has a comment in the middle",
+    css: " text; te/* comment */xt",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 8], [NodeTypes.COMMENT_NODE, 11, 20], [NodeTypes.PROPERTY_NODE, 22, 24]]
+  },
+  {
+    desc: "Whitespace, one property, one selector",
+    css: " text; text{}",
+    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 11], [NodeTypes.OPEN_RULE], [NodeTypes.CLOSE_RULE]]
+  },
+  {
+    desc: "Whitespace, comment, whitespace, and two properties",
+    css: " /*comment*/ text; text;",
+    lex: [[NodeTypes.COMMENT_NODE, 3, 10], [NodeTypes.PROPERTY_NODE, 13, 17], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 19, 23], [NodeTypes.CLOSE_PROPERTY]]
+  },
+  {
+    desc: "Comment with property",
+    css: "/* comment */text",
+    lex: [[NodeTypes.COMMENT_NODE, 2, 11], [NodeTypes.PROPERTY_NODE, 13, 17]]
+  },
+  {
+    desc: "Selector with property with ;",
+    css: "text { prop; }",
+    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+  },
+  {
+    desc: "Selector with property without ;",
+    css: "text { prop }",
+    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 13], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+  },
+  {
+    desc: "Selector with properties",
+    css: "text { prop; prop2: value }",
+    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 13, 27], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+  },
+  {
+    desc: "Sass nested properties",
+    css: "text { prop; prop2 { value } }",
+    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 13, 18], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 21, 30], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+  }
 ];
 
 describe("lexes", async () =>
@@ -108,9 +152,7 @@ describe("lexes", async () =>
       }
 
       if (!isEqual(tokens, eachCase.lex)) {
-        console.log("Not equal");
         console.log(resolveNodesNumbers(eachCase.css, result));
-        console.log("after");
         try {
           result = Lex(eachCase.css);
         } catch (e) { }

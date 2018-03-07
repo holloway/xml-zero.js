@@ -1,10 +1,12 @@
 // @flow
 export const NodeTypes = {
   INSTRUCTION_NODE: 0,
-  SELECTOR_NODE: 1,
-  PROPERTY_NODE: 2,
-  COMMENT_NODE: 3,
-  CLOSE_RULE: 4,
+  OPEN_RULE: 1,
+  CLOSE_RULE: 2,
+  SELECTOR_NODE: 3,
+  PROPERTY_NODE: 4,
+  CLOSE_PROPERTY: 5,
+  COMMENT_NODE: 6,
 };
 
 export const NodeTypeKeys = Object.keys(NodeTypes).sort(
@@ -88,8 +90,6 @@ const seekCSSExpression = (css: string, i: number) => {
 
 const seekBackNotChar = (css: string, i: number, searchChars: Array<string>) => {
   let exitAfter = 100000; // At least 1MB of tokens
-  console.log(css[i] === undefined ? 'undef' : 'wt', 'checking1', i, css.length, '+++++', css[i], `[${css.substring(i)}]`, searchChars);
-
   while (i > 0 && searchChars.indexOf(css[i]) !== -1) {
     i--;
     exitAfter--;
@@ -117,14 +117,18 @@ const onComment = (css: string, i: number) => {
 const onSelector = (css: string, i: number) => {
   const token = [NodeTypes.SELECTOR_NODE, i];
   i = seekCSSExpression(css, i);
+  if ([undefined, ';', '}'].indexOf(css[i]) !== -1) {
+    token[0] = NodeTypes.PROPERTY_NODE;
+  }
   if ([undefined, ...WHITESPACE, ...SELECTOR_TERMINATION].indexOf(css[i]) !== -1) {
     // trim trailing whitespace
     const iWithoutWhitespace = seekBackNotChar(css, i - 1, WHITESPACE);
     token.push(iWithoutWhitespace);
   } else {
     token.push(i);
+    i++;
   }
-  i++;
+
   return [i, token];
 }
 
@@ -149,7 +153,7 @@ const Lexx = (css: string, options: ?Options) => {
   let i = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string and using integers makes sense
   let char;
   let token;
-  let textTokens;
+  let currentExpressionTokens = [];
   let debugExitAfterLoops = 1073741824; // an arbitrary large number
 
   while (i < css.length) {
@@ -167,26 +171,50 @@ const Lexx = (css: string, options: ?Options) => {
         case '\t':
         case '\r':
         case '\n':
+          i++;
+          break;
+        case '{':
+          i++;
+          currentExpressionTokens.forEach(token => token[0] = NodeTypes.SELECTOR_NODE);
+          currentExpressionTokens = [];
+          token = [NodeTypes.OPEN_RULE];
+          tokens.push(token);
+          break;
         case ';':
           i++;
+          currentExpressionTokens.forEach(token => token[0] = NodeTypes.PROPERTY_NODE);
+          currentExpressionTokens = [];
+          token = [NodeTypes.CLOSE_PROPERTY];
+          tokens.push(token);
           break;
         case '}':
           [i, token] = onClose(css, i);
           tokens.push(token)
-          console.log('close', i, css[i], css.substring(i));
+          currentExpressionTokens = [];
           break;
         default:
-          // console.log('char', `[${char}]`)
+          // properties or selectors
           [i, token] = onSelector(css, i);
           tokens.push(token);
 
+          if (css[i - 1] === '}') {
+            // a property that closed with a '}' rather than a ';'
+            if (token[0] === NodeTypes.PROPERTY_NODE) {
+              token = [NodeTypes.CLOSE_PROPERTY];
+              tokens.push(token);
+            }
+            token = [NodeTypes.CLOSE_RULE];
+            tokens.push(token);
+            currentExpressionTokens = [];
+          } else {
+            currentExpressionTokens.push(token);
+          }
           break;
       }
-
     }
-
-
   }
+  currentExpressionTokens.forEach(token => token[0] = NodeTypes.PROPERTY_NODE);
+  currentExpressionTokens = [];
   return tokens;
 };
 
