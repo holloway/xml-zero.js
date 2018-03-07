@@ -1,39 +1,38 @@
 # xml-zero-lexer
 
-Friendly and forgiving HTML5/XML5/JSX lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.
-
-Parses HTML/XML/React JSX into tokens.
+Friendly and forgiving CSS/SASS/LESS lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.
 
 ## Features
 
-* Supports HTML, XML, and JSX.
+* Supports CSS, SASS and LESS.
 * Zero-copy
 
 ## Usage
 
 This is a zero-copy lexer/parser so it returns an array of offsets.
 
-    import Lexx, { NodeTypes } from 'xml-zero-lexer';
+    import Lexx, { NodeTypes } from 'css-zero-lexer';
 
-    const xml = '<p>his divine shadow</p>';
+    const css = 'text { prop; prop2: value }';
     const tokens = Lexx(xml);
 
     // 'tokens' is now:
     //   [
-    //     [NodeTypes.ELEMENT_NODE, 1, 2],
-    //     [NodeTypes.TEXT_NODE, 3, 20],
-    //     [NodeTypes.CLOSE_ELEMENT],
+    //    [NodeTypes.SELECTOR_NODE, 0, 4],
+    //    [NodeTypes.OPEN_RULE],
+    //    [NodeTypes.PROPERTY_NODE, 7, 11],
+    //    [NodeTypes.CLOSE_PROPERTY],
+    //    [NodeTypes.PROPERTY_NODE, 13, 27],
+    //    [NodeTypes.CLOSE_PROPERTY],
+    //    [NodeTypes.CLOSE_RULE]
     //   ]
 
-    xml.substring(tokens[0][0], tokens[0][1]);
-    // would return "p"
+    css.substring(tokens[0][1], tokens[0][2]);
+    // would return "text"
 
-    xml.substring(tokens[1][0], tokens[1][1]);
-    // would return "his divine shadow"
+2.4KB gzipped.
 
-5KB gzipped.
-
-Want to turn it back into HTML? Try `xml-zero-beautify`.
+Want to turn it back into CSS? Try `css-zero-beautify`.
 
 ---
 
