@@ -3,7 +3,7 @@ import Lexx, { NodeTypes } from "css-zero-lexer";
 
 type Options = {
   beautify: boolean,
-  output: 'plaintext' || 'html',
+  output: "plaintext" | "html"
 };
 
 export const OUTPUT_FORMATS = {

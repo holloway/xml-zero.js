@@ -1,5 +1,5 @@
 import Lexx, { NodeTypes, NodeTypeKeys } from "../src/index";
-import { isEqual } from 'lodash';
+import { isEqual } from "lodash";
 
 export const resolve = (css: string, token: Array<number>) => {
   if (!token || (token.length - 1) % 2 !== 0)
@@ -15,7 +15,7 @@ export const resolve = (css: string, token: Array<number>) => {
 
 const resolveNodes = (css, tokens) => {
   return tokens.map(token => resolve(css, token));
-}
+};
 
 const resolveNodeNumber = (css: string, token: Array<number>) => {
   return [NodeTypeKeys[token[0]], token.slice(1)];
@@ -48,6 +48,15 @@ var cases = [
     lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.PROPERTY_NODE, 11, 15]]
   },
   {
+    desc: "property and comment and property",
+    css: "prop/*comment*/text",
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 0, 4],
+      [NodeTypes.COMMENT_NODE, 6, 13],
+      [NodeTypes.PROPERTY_NODE, 15, 19]
+    ]
+  },
+  {
     desc: "comment and whitespace and property",
     css: "/*comment*/ text",
     lex: [[NodeTypes.COMMENT_NODE, 2, 9], [NodeTypes.PROPERTY_NODE, 12, 16]]
@@ -75,37 +84,65 @@ var cases = [
   {
     desc: "Whitespace then two properties",
     css: " text; text;",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY]]
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 1, 5],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY]
+    ]
   },
   {
     desc: "Two properties with whitespace",
     css: " text; text; ",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY]]
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 1, 5],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY]
+    ]
   },
   {
     desc: "One property, one selector",
     css: " text; text{",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 11], [NodeTypes.OPEN_RULE]]
-  },
-  {
-    desc: "One property, one selector with a comment in the middle",
-    css: " text; te/* comment */xt{",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 8], [NodeTypes.COMMENT_NODE, 11, 20], [NodeTypes.SELECTOR_NODE, 22, 24], [NodeTypes.OPEN_RULE]]
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 1, 5],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.SELECTOR_NODE, 7, 11],
+      [NodeTypes.OPEN_RULE]
+    ]
   },
   {
     desc: "Two properties, the second has a comment in the middle",
     css: " text; te/* comment */xt",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 7, 8], [NodeTypes.COMMENT_NODE, 11, 20], [NodeTypes.PROPERTY_NODE, 22, 24]]
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 1, 5],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.PROPERTY_NODE, 7, 9],
+      [NodeTypes.COMMENT_NODE, 11, 20],
+      [NodeTypes.PROPERTY_NODE, 22, 24]
+    ]
   },
   {
     desc: "Whitespace, one property, one selector",
     css: " text; text{}",
-    lex: [[NodeTypes.PROPERTY_NODE, 1, 5], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 7, 11], [NodeTypes.OPEN_RULE], [NodeTypes.CLOSE_RULE]]
+    lex: [
+      [NodeTypes.PROPERTY_NODE, 1, 5],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.SELECTOR_NODE, 7, 11],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.CLOSE_RULE]
+    ]
   },
   {
     desc: "Whitespace, comment, whitespace, and two properties",
     css: " /*comment*/ text; text;",
-    lex: [[NodeTypes.COMMENT_NODE, 3, 10], [NodeTypes.PROPERTY_NODE, 13, 17], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 19, 23], [NodeTypes.CLOSE_PROPERTY]]
+    lex: [
+      [NodeTypes.COMMENT_NODE, 3, 10],
+      [NodeTypes.PROPERTY_NODE, 13, 17],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.PROPERTY_NODE, 19, 23],
+      [NodeTypes.CLOSE_PROPERTY]
+    ]
   },
   {
     desc: "Comment with property",
@@ -115,22 +152,91 @@ var cases = [
   {
     desc: "Selector with property with ;",
     css: "text { prop; }",
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 4],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE]
+    ]
   },
   {
     desc: "Selector with property without ;",
     css: "text { prop }",
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 13], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 4],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE]
+    ]
   },
   {
     desc: "Selector with properties",
     css: "text { prop; prop2: value }",
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.PROPERTY_NODE, 13, 27], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 4],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.PROPERTY_NODE, 13, 25],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE]
+    ]
   },
   {
     desc: "Sass nested properties",
     css: "text { prop; prop2 { value } }",
-    lex: [[NodeTypes.SELECTOR_NODE, 0, 4], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 7, 11], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.SELECTOR_NODE, 13, 18], [NodeTypes.OPEN_RULE], [NodeTypes.PROPERTY_NODE, 21, 30], [NodeTypes.CLOSE_PROPERTY], [NodeTypes.CLOSE_RULE]]
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 4],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 7, 11],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.SELECTOR_NODE, 13, 18],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 21, 26],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.CLOSE_RULE]
+    ]
+  },
+  {
+    desc: "CSS comma selectors",
+    css: "text selector1, text selector2 { prop; prop2 { value } }",
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 14],
+      [NodeTypes.SELECTOR_SEPARATOR],
+      [NodeTypes.SELECTOR_NODE, 16, 30],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 33, 37],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.SELECTOR_NODE, 39, 44],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 47, 52],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.CLOSE_RULE]
+    ]
+  },
+  {
+    desc: "CSS comma selectors with comment",
+    css:
+      "text selector1, text selector2 { prop; prop2 { value } /* comment */ }",
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 14],
+      [NodeTypes.SELECTOR_SEPARATOR],
+      [NodeTypes.SELECTOR_NODE, 16, 30],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 33, 37],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.SELECTOR_NODE, 39, 44],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 47, 52],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.COMMENT_NODE, 57, 66],
+      [NodeTypes.CLOSE_RULE]
+    ]
   }
 ];
 
@@ -143,7 +249,9 @@ describe("lexes", async () =>
       console.log(e);
     }
 
-    test(`${eachCase.desc} ${eachCase.css} [${tokens ? resolveNodes(eachCase.css, tokens).join(" | ") : ''}]`, async () => {
+    test(`${eachCase.desc} ${eachCase.css} [${
+      tokens ? resolveNodes(eachCase.css, tokens).join(" | ") : ""
+    }]`, async () => {
       let result;
       try {
         result = Lexx(eachCase.css);
@@ -155,7 +263,7 @@ describe("lexes", async () =>
         console.log(resolveNodesNumbers(eachCase.css, result));
         try {
           result = Lex(eachCase.css);
-        } catch (e) { }
+        } catch (e) {}
         if (result) {
           console.log("Result:", result, " from ", eachCase.css);
           console.log(resolveNodes(eachCase.css, result));
@@ -165,4 +273,3 @@ describe("lexes", async () =>
       expect(result).toEqual(eachCase.lex);
     });
   }));
-
