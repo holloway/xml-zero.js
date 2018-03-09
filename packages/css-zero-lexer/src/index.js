@@ -71,15 +71,12 @@ const seekExpression = (css: string, i: number) => {
         if (NESTING_OPEN.indexOf(char) !== -1) {
           nesting.push(NESTING_CLOSE[NESTING_OPEN.indexOf(char)]);
         } else {
-          console.log("leaving?");
           // time to leave
-          console.log("leavy", i, `[${css.substring(0, i)}]`);
           tokens.push([
             NodeTypes.SELECTOR_NODE,
             startI,
             trimWhitespace(css, css.length >= i ? i - 1 : i)
           ]);
-          console.log("tokely", tokens);
           return [i, tokens];
         }
       } else {
@@ -219,8 +216,6 @@ const Lexx = (css: string, options: ?Options) => {
 
           [i, onExpressionTokens] = onExpression(css, i);
 
-          console.log("expr", onExpressionTokens);
-
           onExpressionTokens.forEach(token => {
             ambiguousTokens.push(token);
             tokens.push(token);
@@ -238,24 +233,14 @@ const Lexx = (css: string, options: ?Options) => {
               tokens.push([NodeTypes.CLOSE_PROPERTY]);
             }
           }
-
-          //   console.log(
-          //     "closing",
-          //     css.length - 1,
-          //     i,
-          //     `[${css.substring(28, 99)}]`,
-          //     `[${css.substring(i, 99)}]`
-          //   );
-          // } else {
-          //   ambiguousTokens.push(token);
-          // }
           break;
       }
     }
   }
   ambiguousTokens.forEach(token => {
-    console.log("tok", token);
-    token[0] = NodeTypes.PROPERTY_NODE;
+    if (token[0] === NodeTypes.SELECTOR_NODE) {
+      token[0] = NodeTypes.PROPERTY_NODE;
+    }
   });
   return tokens;
 };

@@ -1,7 +1,8 @@
 {
   "name": "css-zero-lexer",
-  "description": "Friendly and forgiving CSS lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "0.0.2",
+  "description":
+    "Friendly and forgiving CSS lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
+  "version": "0.0.4",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -52,10 +53,6 @@
         }
       ]
     ],
-    "plugins": [
-      [
-        "transform-object-rest-spread"
-      ]
-    ]
+    "plugins": [["transform-object-rest-spread"]]
   }
 }

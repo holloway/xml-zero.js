@@ -1,7 +1,11 @@
 import Beautify, { OUTPUT_FORMATS } from "../src/index";
 
 var cases = [
-
+  {
+    desc: "a prop",
+    css: "my prop",
+    result: "my prop;"
+  }
 ];
 
 describe("lexes", async () =>
@@ -9,8 +13,7 @@ describe("lexes", async () =>
     test(`${eachCase.desc} ${eachCase.css.replace(/\n/g, "\\n")}`, async () => {
       let result;
       try {
-        const options = {
-        };
+        const options = {};
         if (eachCase.output) {
           options.output = eachCase.output;
         }

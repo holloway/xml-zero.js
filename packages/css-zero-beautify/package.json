@@ -1,26 +1,24 @@
 {
   "name": "css-zero-beautify",
   "description": "Friendly and forgiving CSS/SASS/LESS beautifier",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "flow": "flow"
   },
-  "keywords": [
-    "beautify",
-    "prettify",
-    "css",
-    "sass",
-    "scss",
-    "less"
-  ],
+  "keywords": ["beautify", "prettify", "css", "sass", "scss", "less"],
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/holloway/xml-zero.js/"
+  },
+  "env": {
+    "production": {
+      "plugins": ["transform-es2015-modules-commonjs"]
+    }
   },
   "//": [
     "babel-cli: needed for building",
@@ -28,6 +26,7 @@
   ],
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
@@ -48,13 +47,9 @@
         }
       ]
     ],
-    "plugins": [
-      [
-        "transform-object-rest-spread"
-      ]
-    ]
+    "plugins": [["transform-object-rest-spread"]]
   },
   "dependencies": {
-    "css-zero-lexer": "^0.0.2"
+    "css-zero-lexer": "^0.0.3"
   }
 }
