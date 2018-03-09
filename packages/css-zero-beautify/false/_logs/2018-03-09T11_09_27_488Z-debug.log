@@ -1,0 +1,26 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/matthew/.nvm/versions/node/v8.9.3/bin/node',
+1 verbose cli   '/home/matthew/.nvm/versions/node/v8.9.3/bin/npm',
+1 verbose cli   'run',
+1 verbose cli   'jest',
+1 verbose cli   '--no-cache' ]
+2 info using npm@5.5.1
+3 info using node@v8.9.3
+4 verbose stack Error: missing script: jest
+4 verbose stack     at run (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/lib/run-script.js:151:19)
+4 verbose stack     at /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/lib/run-script.js:61:5
+4 verbose stack     at /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:115:5
+4 verbose stack     at /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:402:5
+4 verbose stack     at checkBinReferences_ (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:357:45)
+4 verbose stack     at final (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:400:3)
+4 verbose stack     at then (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:160:5)
+4 verbose stack     at /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/read-package-json/read-json.js:280:12
+4 verbose stack     at /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:78:16
+4 verbose stack     at FSReqWrap.readFileAfterClose [as oncomplete] (fs.js:511:3)
+5 verbose cwd /home/matthew/Development/sites/xml-zero.js/packages/css-zero-beautify
+6 verbose Linux 4.13.0-36-generic
+7 verbose argv "/home/matthew/.nvm/versions/node/v8.9.3/bin/node" "/home/matthew/.nvm/versions/node/v8.9.3/bin/npm" "run" "jest" "--no-cache"
+8 verbose node v8.9.3
+9 verbose npm  v5.5.1
+10 error missing script: jest
+11 verbose exit [ 1, true ]

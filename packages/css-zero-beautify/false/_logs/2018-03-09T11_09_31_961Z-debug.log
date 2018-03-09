@@ -1,0 +1,40 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/matthew/.nvm/versions/node/v8.9.3/bin/node',
+1 verbose cli   '/home/matthew/.nvm/versions/node/v8.9.3/bin/npm',
+1 verbose cli   'run',
+1 verbose cli   'test',
+1 verbose cli   '--no-cache' ]
+2 info using npm@5.5.1
+3 info using node@v8.9.3
+4 verbose run-script [ 'pretest', 'test', 'posttest' ]
+5 info lifecycle css-zero-beautify@0.0.2~pretest: css-zero-beautify@0.0.2
+6 info lifecycle css-zero-beautify@0.0.2~test: css-zero-beautify@0.0.2
+7 verbose lifecycle css-zero-beautify@0.0.2~test: unsafe-perm in lifecycle true
+8 verbose lifecycle css-zero-beautify@0.0.2~test: PATH: /home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/bin/node-gyp-bin:/home/matthew/Development/sites/xml-zero.js/packages/css-zero-beautify/node_modules/.bin:/home/matthew/.nvm/versions/node/v8.9.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+9 verbose lifecycle css-zero-beautify@0.0.2~test: CWD: /home/matthew/Development/sites/xml-zero.js/packages/css-zero-beautify
+10 silly lifecycle css-zero-beautify@0.0.2~test: Args: [ '-c', 'jest' ]
+11 silly lifecycle css-zero-beautify@0.0.2~test: Returned: code: 1  signal: null
+12 info lifecycle css-zero-beautify@0.0.2~test: Failed to exec test script
+13 verbose stack Error: css-zero-beautify@0.0.2 test: `jest`
+13 verbose stack Exit status 1
+13 verbose stack     at EventEmitter.<anonymous> (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/npm-lifecycle/index.js:280:16)
+13 verbose stack     at emitTwo (events.js:126:13)
+13 verbose stack     at EventEmitter.emit (events.js:214:7)
+13 verbose stack     at ChildProcess.<anonymous> (/home/matthew/.nvm/versions/node/v8.9.3/lib/node_modules/npm/node_modules/npm-lifecycle/lib/spawn.js:55:14)
+13 verbose stack     at emitTwo (events.js:126:13)
+13 verbose stack     at ChildProcess.emit (events.js:214:7)
+13 verbose stack     at maybeClose (internal/child_process.js:925:16)
+13 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:209:5)
+14 verbose pkgid css-zero-beautify@0.0.2
+15 verbose cwd /home/matthew/Development/sites/xml-zero.js/packages/css-zero-beautify
+16 verbose Linux 4.13.0-36-generic
+17 verbose argv "/home/matthew/.nvm/versions/node/v8.9.3/bin/node" "/home/matthew/.nvm/versions/node/v8.9.3/bin/npm" "run" "test" "--no-cache"
+18 verbose node v8.9.3
+19 verbose npm  v5.5.1
+20 error code ELIFECYCLE
+21 error errno 1
+22 error css-zero-beautify@0.0.2 test: `jest`
+22 error Exit status 1
+23 error Failed at the css-zero-beautify@0.0.2 test script.
+23 error This is probably not a problem with npm. There is likely additional logging output above.
+24 verbose exit [ 1, true ]

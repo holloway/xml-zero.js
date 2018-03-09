@@ -15,24 +15,26 @@
     "type": "git",
     "url": "https://github.com/holloway/xml-zero.js/"
   },
-  "env": {
-    "production": {
-      "plugins": ["transform-es2015-modules-commonjs"]
-    }
-  },
   "//": [
     "babel-cli: needed for building",
     "babel-register: needed for testing via Jest"
   ],
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.4.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
     "babel-register": "^6.26.0",
     "flow-bin": "^0.55.0",
     "jest": "^21.0.2"
+  },
+  "env": {
+    "test": {
+      "presets": ["env"]
+    }
   },
   "main": "./build/index.js",
   "babel": {
@@ -50,6 +52,6 @@
     "plugins": [["transform-object-rest-spread"]]
   },
   "dependencies": {
-    "css-zero-lexer": "^0.0.3"
+    "css-zero-lexer": "^0.0.4"
   }
 }
