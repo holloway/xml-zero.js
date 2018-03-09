@@ -62,10 +62,76 @@ const Beautify = (css: string, options: Options) => {
 
   const depth = [];
   let b = "";
-  let inElement = false;
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
+    switch (token[0]) {
+      case NodeTypes.PROPERTY_NODE:
+        if (useOptions.beautify && depth.length > 0) {
+          b += format.indentation.repeat(depth.length);
+        }
+        b += format(
+          css.substring(token[1], token[2]).trim(),
+          "prop",
+          useOptions
+        );
+        break;
+      case NodeTypes.CLOSE_PROPERTY:
+        b += format(";", "prop-close", useOptions);
+        if (useOptions.beautify) {
+          b += format.linebreak;
+        }
+        break;
+      case NodeTypes.SELECTOR_NODE:
+        if (useOptions.beautify && depth.length > 0) {
+          b += format.indentation.repeat(depth.length);
+        }
+        b += format(
+          css.substring(token[1], token[2]).trim(),
+          "selector",
+          useOptions
+        );
+        break;
+      case NodeTypes.SELECTOR_SEPARATOR: // comma character between selectors
+        b += format(",", "comma", useOptions);
+        if (useOptions.beautify) {
+          b += format.linebreak;
+        }
+        break;
+      case NodeTypes.OPEN_RULE:
+        if (useOptions.beautify) {
+          b += " ";
+        }
+        b += format("{", "open-rule", useOptions);
+        if (useOptions.beautify) {
+          b += format.linebreak;
+        }
+        depth.push(NodeTypes.OPEN_RULE);
+        break;
+      case NodeTypes.CLOSE_RULE:
+        if (tokens[i - 1][0] === NodeTypes.COMMENT_NODE) {
+          b += format.linebreak;
+        }
+        if (useOptions.beautify && depth.length > 0) {
+          b += format.indentation.repeat(depth.length - 1);
+        }
+        b += format("}", "close-rule", useOptions);
+        if (useOptions.beautify) {
+          b += format.linebreak;
+        }
+        depth.pop();
+        break;
+      case NodeTypes.COMMENT_NODE:
+        if (useOptions.beautify && depth.length > 0) {
+          b += format.indentation.repeat(depth.length);
+        }
+        b += format(
+          `/*${css.substring(token[1], token[2])}*/`,
+          "comment",
+          useOptions
+        );
+        break;
+    }
   }
   return b;
 };
