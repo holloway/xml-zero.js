@@ -12,6 +12,31 @@ This is a work in progress. Don't use it yet!
 ## Usage
 
     import Beautify, { OUTPUT_FORMATS } from 'css-zero-beautifier';
+    const css = 'text selector1, text selector2 { prop; prop2 { value } /* comment */ }';
+
+    let result = Beautify(css);
+    // result is,
+    //
+    // text selector1,
+    // text selector2 {
+    //   prop;
+    //   prop2 {
+    //     value;
+    //   }
+    //   /* comment */
+    // }
+
+    result = Beautify(css, { output: OUTPUT_FORMATS.html });
+    // result is,
+    //
+    // <span class="b-selector">text selector1</span><span class="b-comma">,</span><br/>
+    // <span class="b-selector">text selector2</span> <span class="b-open-rule">{</span><br/>
+    //  &nbsp;<span class="b-prop">prop</span><span class="b-prop-close">;</span><br/>
+    //  &nbsp;<span class="b-selector">prop2</span> <span class="b-open-rule">{</span><br/>
+    //  &nbsp; &nbsp;<span class="b-prop">value</span><span class="b-prop-close">;</span><br/>
+    //  &nbsp;<span class="b-close-rule">}</span><br/>
+    //  &nbsp;<span class="b-comment">/* comment */</span><br/>
+    // <span class="b-close-rule">}</span><br/>
 
 8KB gzipped (that includes all deps).
 

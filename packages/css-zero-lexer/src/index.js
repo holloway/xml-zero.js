@@ -1,6 +1,5 @@
 // @flow
 export const NodeTypes = {
-  INSTRUCTION_NODE: 0,
   OPEN_RULE: 1,
   CLOSE_RULE: 2,
   SELECTOR_NODE: 3,

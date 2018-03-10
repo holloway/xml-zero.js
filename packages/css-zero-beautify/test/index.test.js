@@ -136,6 +136,13 @@ var cases = [
     output: "html",
     beautified:
       '<span class="b-selector">text selector1</span><span class="b-comma">,</span><br/>\n<span class="b-selector">text selector2</span> <span class="b-open-rule">{</span><br/>\n &nbsp;<span class="b-prop">prop</span><span class="b-prop-close">;</span><br/>\n &nbsp;<span class="b-selector">prop2</span> <span class="b-open-rule">{</span><br/>\n &nbsp; &nbsp;<span class="b-prop">value</span><span class="b-prop-close">;</span><br/>\n &nbsp;<span class="b-close-rule">}</span><br/>\n &nbsp;<span class="b-comment">/* comment */</span><br/>\n<span class="b-close-rule">}</span><br/>\n'
+  },
+  {
+    desc: "Testing escaping chars",
+    css: "text > selector1 { prop; }",
+    output: "html",
+    beautified:
+      '<span class="b-selector">text &gt; selector1</span> <span class="b-open-rule">{</span><br/>\n &nbsp;<span class="b-prop">prop</span><span class="b-prop-close">;</span><br/>\n<span class="b-close-rule">}</span><br/>\n'
   }
 ];
 

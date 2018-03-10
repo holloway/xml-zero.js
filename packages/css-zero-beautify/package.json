@@ -1,7 +1,7 @@
 {
   "name": "css-zero-beautify",
   "description": "Friendly and forgiving CSS/SASS/LESS beautifier",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
