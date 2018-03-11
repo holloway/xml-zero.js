@@ -1,7 +1,7 @@
 {
   "name": "css-zero-beautify",
   "description": "Friendly and forgiving CSS/SASS/LESS beautifier",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -52,6 +52,6 @@
     "plugins": [["transform-object-rest-spread"]]
   },
   "dependencies": {
-    "css-zero-lexer": "^0.0.4"
+    "css-zero-lexer": "^1.0.0"
   }
 }
