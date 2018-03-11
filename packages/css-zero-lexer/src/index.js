@@ -49,11 +49,22 @@ const seekExpression = (css: string, i: number) => {
   const tokens = [];
   let token;
 
+  const completeToken = (tokens, i) => {
+    if (tokens.length && tokens[tokens.length - 1].length === 2) {
+      // an incomplete token that we should finish before adding comment
+      tokens[tokens.length - 1].push(i);
+      return true;
+    }
+    return false;
+  };
+
   let exitAfter = 1000000; // At least 10MB of tokens
   let char;
   while (i < css.length) {
     char = css[i];
     if (char === COMMENT[0][0] && css[i + 1] === COMMENT[0][1]) {
+      completeToken(tokens, i - 1);
+      const endOfComment = seekString(css, i, COMMENT[1]);
       tokens.push([NodeTypes.COMMENT_NODE, i + 2, endOfComment + 2]);
       i = endOfComment + 2;
     } else {
@@ -68,26 +79,37 @@ const seekExpression = (css: string, i: number) => {
         );
         char = css[i];
         if (NESTING_OPEN.indexOf(char) !== -1) {
-          nesting.push(NESTING_CLOSE[NESTING_OPEN.indexOf(char)]);
+          nesting.push(NESTING_OPEN.indexOf(char));
+          // incomplete token that we'll add to later...
+          tokens.push([NodeTypes.PROPERTY_NODE, startI]);
+          i++;
         } else {
           // time to leave
-          tokens.push([
-            NodeTypes.SELECTOR_NODE,
-            startI,
-            trimWhitespace(css, css.length >= i ? i - 1 : i)
-          ]);
+          if (!completeToken(tokens, i)) {
+            tokens.push([
+              NodeTypes.SELECTOR_NODE,
+              startI,
+              trimWhitespace(css, css.length >= i ? i - 1 : i)
+            ]);
+          }
           return [i, tokens];
         }
       } else {
         const closeChar = NESTING_CLOSE[nesting[nesting.length - 1]];
-        i = seekChar(css, i, [closeChar, ...NESTING_OPEN]);
+        i = Math.min(
+          seekChar(css, i, [closeChar, ...NESTING_OPEN]),
+          seekString(css, i, COMMENT[0])
+        );
         char = css[i];
-        if (char === closeChar) {
+        if (char === COMMENT[0][0] && css[i + 1] === COMMENT[0][1]) {
+          // loop around until end of comment
+        } else if (char === closeChar) {
           nesting.pop();
+          i++;
         } else if (NESTING_OPEN.indexOf(char)) {
           nesting.push(char);
+          i++;
         }
-        i++;
       }
     }
 
@@ -215,10 +237,18 @@ const Lexx = (css: string, options: ?Options) => {
 
           [i, onExpressionTokens] = onExpression(css, i);
 
-          onExpressionTokens.forEach(token => {
-            ambiguousTokens.push(token);
-            tokens.push(token);
-          });
+          onExpressionTokens
+            // .filter(token => token[0] === NodeTypes.SELECTOR_NODE)
+            .forEach(token => {
+              if (
+                [NodeTypes.SELECTOR_NODE, NodeTypes.PROPERTY_NODE].indexOf(
+                  token[0]
+                ) !== -1
+              ) {
+                ambiguousTokens.push(token);
+              }
+              tokens.push(token);
+            });
 
           if (css[i] === "}") {
             let hasPropertyNode = false;

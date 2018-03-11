@@ -2,7 +2,7 @@
   "name": "css-zero-lexer",
   "description":
     "Friendly and forgiving CSS lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
@@ -13,11 +13,11 @@
     "css",
     "sass",
     "scss",
+    "style",
     "parser",
     "lexer",
     "tokenise",
     "token",
-    "style",
     "zero copy",
     "zerocopy"
   ],

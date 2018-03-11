@@ -237,6 +237,56 @@ var cases = [
       [NodeTypes.COMMENT_NODE, 57, 66],
       [NodeTypes.CLOSE_RULE]
     ]
+  },
+  {
+    desc: "@media test",
+    css: "@media (max-width: 300px) { sel { prop } }",
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 26],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.SELECTOR_NODE, 28, 31],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 34, 38],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.CLOSE_RULE]
+    ]
+  },
+  {
+    desc: "@media with preceding selector and following prop",
+    css: "sel { prop: value } @media (max-width: 300px) { sel { prop } } prop",
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 3],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 6, 17],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.SELECTOR_NODE, 20, 46],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.SELECTOR_NODE, 48, 51],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 54, 58],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.PROPERTY_NODE, 63, 67]
+    ]
+  },
+  {
+    desc: "@media with inline comment",
+    css: "@media (max-width: 300px /* mobile */) { sel { prop } }",
+    lex: [
+      [NodeTypes.SELECTOR_NODE, 0, 24],
+      [NodeTypes.COMMENT_NODE, 27, 37],
+      [NodeTypes.SELECTOR_NODE, 38, 38],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.SELECTOR_NODE, 41, 44],
+      [NodeTypes.OPEN_RULE],
+      [NodeTypes.PROPERTY_NODE, 47, 51],
+      [NodeTypes.CLOSE_PROPERTY],
+      [NodeTypes.CLOSE_RULE],
+      [NodeTypes.CLOSE_RULE]
+    ]
   }
 ];
 
