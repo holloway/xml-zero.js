@@ -1,6 +1,8 @@
 // @flow
 import Lexx, { NodeTypes } from "css-zero-lexer";
 
+export { Lexx as CSSZeroLexer, NodeTypes as CSSZeroLexerNodeTypes };
+
 type Options = {
   beautify: boolean,
   output: "plaintext" | "html"
