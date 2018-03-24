@@ -2,7 +2,7 @@
   "name": "css-zero-lexer",
   "description":
     "Friendly and forgiving CSS lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",

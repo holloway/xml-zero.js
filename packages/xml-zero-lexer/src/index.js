@@ -421,13 +421,17 @@ const Lexx = (xml: string, options: ?Options) => {
   let char;
   let token;
   let textTokens;
-  let debugExitAfterLoops = 1073741824; // an arbitrary large number
+  let debugExitAfterLoops = Math.min(xml.length, 1073741824); // an arbitrary large number
   let inElement = false;
 
   while (i < xml.length) {
     char = xml[i];
     debugExitAfterLoops--;
-    if (debugExitAfterLoops < 0) throw Error("Too many loops");
+    if (debugExitAfterLoops < 0)
+      throw Error(
+        "Congratulations, you probably found a bug in xml-zero-lexer! Please raise an issue on https://github.com/holloway/xml-zero.js/issues with your XML, which was: " +
+          xml
+      );
 
     if (!inElement) {
       // text node

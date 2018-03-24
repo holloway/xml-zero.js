@@ -58,7 +58,7 @@ const seekExpression = (css: string, i: number) => {
     return false;
   };
 
-  let exitAfter = 1000000; // At least 10MB of tokens
+  let exitAfter = Math.min(css.length, 1000000); // At least 10MB of tokens
   let char;
   while (i < css.length) {
     char = css[i];
@@ -187,7 +187,11 @@ const Lexx = (css: string, options: ?Options) => {
   while (i < css.length) {
     char = css[i];
     debugExitAfterLoops--;
-    if (debugExitAfterLoops < 0) throw Error("Too many loops");
+    if (debugExitAfterLoops < 0)
+      throw Error(
+        "Congratulations, you probably found a bug in css-zero-lexer! Please raise an issue on https://github.com/holloway/xml-zero.js/issues with your CSS, which was: " +
+          css
+      );
 
     if (char === "/" && css[i + 1] === "*") {
       i++;

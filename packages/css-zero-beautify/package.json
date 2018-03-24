@@ -1,14 +1,21 @@
 {
   "name": "css-zero-beautify",
   "description": "Friendly and forgiving CSS/SASS/LESS beautifier",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "flow": "flow"
   },
-  "keywords": ["beautify", "prettify", "css", "sass", "scss", "less"],
+  "keywords": [
+    "beautify",
+    "prettify",
+    "css",
+    "sass",
+    "scss",
+    "less"
+  ],
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
   "repository": {
@@ -33,7 +40,9 @@
   },
   "env": {
     "test": {
-      "presets": ["env"]
+      "presets": [
+        "env"
+      ]
     }
   },
   "main": "./build/index.js",
@@ -49,9 +58,13 @@
         }
       ]
     ],
-    "plugins": [["transform-object-rest-spread"]]
+    "plugins": [
+      [
+        "transform-object-rest-spread"
+      ]
+    ]
   },
   "dependencies": {
-    "css-zero-lexer": "^1.0.0"
+    "css-zero-lexer": "^1.0.2"
   }
 }

@@ -2,7 +2,7 @@
   "name": "xml-zero-lexer",
   "description":
     "Friendly and forgiving HTML5/XML5/JSX lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "scripts": {
     "build": "babel src --out-dir build",
     "prepublishOnly": "npm run build",
