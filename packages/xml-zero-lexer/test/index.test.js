@@ -702,6 +702,16 @@ var cases = [
       [NodeTypes.ATTRIBUTE_NODE, 3, 12, 14, 15],
       [NodeTypes.CLOSE_ELEMENT]
     ]
+  },
+  {
+    desc: "Declaration with empty attribute",
+    xml: '<?xml version=""?><root></root>',
+    lex: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 15],
+      [NodeTypes.ELEMENT_NODE, 19, 23],
+      [NodeTypes.CLOSE_ELEMENT]
+    ]
   }
 ];
 
