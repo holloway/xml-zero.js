@@ -224,7 +224,6 @@ export const onAttribute = (xml: string, i: number, inElement: number) => {
     // surrounded by quotes
     i++;
     token.push(i);
-    i++;
     i = seekChar(xml, i, xml[enclosed]);
     token.push(i);
     i++;
