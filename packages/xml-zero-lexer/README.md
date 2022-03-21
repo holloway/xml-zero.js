@@ -6,8 +6,10 @@ Parses HTML/XML/React JSX into tokens.
 
 ## Features
 
-* Supports HTML, XML, and JSX.
-* Zero-copy
+- Supports HTML, XML, and JSX.
+- Zero-copy
+- TypeScript
+- Lots of tests
 
 ## Usage
 

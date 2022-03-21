@@ -1,13 +1,11 @@
 {
   "name": "xml-zero-lexer",
-  "description":
-    "Friendly and forgiving HTML5/XML5/JSX lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "2.0.5",
+  "description": "Friendly and forgiving HTML5/XML5/JSX lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
+  "version": "3.0.0",
   "scripts": {
-    "build": "babel src --out-dir build",
-    "prepublishOnly": "npm run build",
-    "test": "jest",
-    "flow": "flow"
+    "build": "tsc",
+    "prepublishOnly": "yarn build",
+    "test": "jest"
   },
   "keywords": [
     "parser",
@@ -18,7 +16,8 @@
     "xml",
     "jsx",
     "react",
-    "markup"
+    "markup",
+    "typescript"
   ],
   "author": "Matthew Holloway",
   "license": "GPL-3.0",
@@ -26,32 +25,15 @@
     "type": "git",
     "url": "https://github.com/holloway/xml-zero.js/"
   },
-  "//": [
-    "babel-cli: needed for building",
-    "babel-register: needed for testing via Jest"
-  ],
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-flow": "^6.23.0",
-    "babel-register": "^6.26.0",
-    "flow-bin": "^0.55.0",
-    "jest": "^21.0.2"
+    "@types/jest": "^27.4.1",
+    "@types/lodash": "^4.14.180",
+    "jest": "^27.5.1",
+    "lodash": "^4.17.21"
   },
   "main": "./build/index.js",
-  "babel": {
-    "presets": [
-      "flow",
-      [
-        "env",
-        {
-          "targets": {
-            "node": "3"
-          }
-        }
-      ]
-    ],
-    "plugins": [["transform-object-rest-spread"]]
+  "dependencies": {
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.6.2"
   }
 }
