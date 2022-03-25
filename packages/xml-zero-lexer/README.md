@@ -64,14 +64,16 @@ You can provide this function one or two arguments:
 
 1. _(Required)_ The input `string` of HTML, XML, or React JSX;
 2. _(Optional)_ `{ jsx?: boolean; html?: boolean; blackholes?: string[] }` where:
-   **jsx** (boolean, optional, default=false): React-JSX attributes are always parsed by `xml-zero-lexer` so this option is only whether to parse `{expression}` in the middle of text / child nodes as a distinct token.
-   **html** (boolean, optional, default=false): Currently, only affects whether to treat `<br>` and `<link>` and `<img>` (and other HTML self-closing tags) as self-closing tags, affecting whether to return another token of `[NodeTypes.CLOSE_ELEMENT]`.
+   **jsx** (boolean, optional, default=false): Whether to parse `{expression}` in the middle of text / child nodes as a distinct JSX token. React-JSX attributes are always parsed by `xml-zero-lexer` so this option is only whether JSX in text / child nodes should be parsed (`true`) or treated as text (`false`).
+
+   **html** (boolean, optional, default=false): Currently, only affects whether to treat `<br>` and `<link>` and `<img>` (and other HTML self-closing tags) as self-closing tags, affecting whether to return another token of `[NodeTypes.CLOSE_ELEMENT]` when parsing these elements.
+
    **blackholes** (string[], optional, default=["script", "style"]): an array of elements names (typically `["script", "style"]` etc.) that have special parsing rules meaning input of `<script> <p> </script>` should be parsed as a script element with a text node of `" <p> "`. The special rule is that such an element encompasses everything until it closes with the same element name.
 
-This function returns **an array of Tokens** `[NodeType: NODE_TYPE, ...restIndexes: number[] ][]` where:
+This function returns `Token[]`. Each `Token` has the shape `[NodeType: NODE_TYPE, ...restIndexes: number[] ]` where:
 
-- `NodeType: NODE_TYPE (number, integer)` can be `NodeTypes.OPEN_ELEMENT`, `NodeTypes.CLOSE_ELEMENT`, `NodeTypes.TEXT_NODE`, `NodeTypes.ATTRIBUTE_NODE` (etc...). This constant can be accessed through the `NodeTypes` export eg `import { NodeTypes } from 'xml-zero-lexer';` and there are TS types.
-- `...restIndexes: number[]` an array of integer indexes into the input string that can be used as eg. `inputString.substring(restIndexes[0], restIndexes[1])`. The length of this array varies based on the `NodeType`. Some `NodeType`s also have a variable length, such as `NodeTypes.ATTRIBUTE`, which can have a value or be "valueless" in HTML (ie `<input hidden>` lacks a value, and in HTML5 should be treated as a boolean `true`). To give an example an input of `<a href="//zombo.com" hidden>` would return:
+- `NodeType: NODE_TYPE = number (integer)`. A number representing the type of Node such as 'open element', 'attribute', 'jsx attribute', 'text node', 'close element' and so on. For convenience the `NodeTypes` export has named keys for each type `NodeTypes.OPEN_ELEMENT`, `NodeTypes.CLOSE_ELEMENT`, `NodeTypes.TEXT_NODE`, `NodeTypes.ATTRIBUTE_NODE` (etc...). This constant can be accessed through the `NodeTypes` export eg `import { NodeTypes } from 'xml-zero-lexer';`.
+- `...restIndexes: number[]` an array of integer indexes into the input string that can be used as eg. `inputString.substring(restIndexes[0], restIndexes[1])`. Each type of `NODE_TYPE` can have a different `restIndexes.length`, from 0 to 4. Some `NodeType`s also have a variable length, such as `NodeTypes.ATTRIBUTE`, because attribute values are optional in HTML5 (ie `<input hidden>` lacks a value, and in HTML5 should be treated as a boolean `true`, but is essentially valueless for the purposes of parsing). So an input string of `<a href="//zombo.com" hidden>` would return:
 
 ```typescript
 [

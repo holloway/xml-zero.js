@@ -522,8 +522,8 @@ const cases: Case[] = [
     <y>&nbsp;</y>`,
     expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
-      [NodeTypes.ATTRIBUTE_NODE, 10, 11],
-      [NodeTypes.ATTRIBUTE_NODE, 12, 99],
+      [NodeTypes.ATTRIBUTE_NODE, 10, 11], // the valueless attribute letter 'y'
+      [NodeTypes.ATTRIBUTE_NODE, 12, 99], // the valuesless attribute string [\n<!ENTITY (...)
       [NodeTypes.TEXT_NODE, 100, 105],
       [NodeTypes.ELEMENT_NODE, 106, 107],
       [NodeTypes.TEXT_NODE, 108, 114],
@@ -732,7 +732,8 @@ const cases: Case[] = [
     jsx: true,
   },
   {
-    description: "JSX inline with template string and nested expression",
+    description:
+      "JSX inline with template string and nested expression and JSX option turned on",
     input:
       "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
     expectedResult: [
@@ -744,7 +745,7 @@ const cases: Case[] = [
     jsx: true,
   },
   {
-    description: "JSX example with JSX turned off",
+    description: "JSX example with JSX option turned off",
     input:
       "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
     expectedResult: [
@@ -763,7 +764,7 @@ const cases: Case[] = [
     ],
   },
   {
-    description: "Declaration with empty attribute",
+    description: "Declaration with empty attribute value",
     input: '<?xml version=""?><root></root>',
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
@@ -773,7 +774,7 @@ const cases: Case[] = [
     ],
   },
   {
-    description: "JSON in JSX attribute twice",
+    description: "POJO in JSX attribute twice",
     input: `<Text id="myid" labelHtml={{en: "My label"}} anotherLabelHtml={{en: "My label"}}/>`,
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 5],
