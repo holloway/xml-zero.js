@@ -30,8 +30,16 @@ const resolveNodesNumbers = (xml: string, tokens: Token[]) => {
   return tokens.map((token) => resolveNodeNumber(xml, token));
 };
 
-var cases = [
-  // This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
+type Case = {
+  desc: string;
+  xml: string;
+  jsx?: boolean;
+  html?: boolean;
+  lex: Token[];
+};
+
+const cases: Case[] = [
+  //  This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
   {
     desc: "text",
     xml: "text",
@@ -600,6 +608,15 @@ var cases = [
     ],
   },
   {
+    desc: "HTML5 self-closing tags without attributes but with HTML parsing mode off so it should be interpreted as opening <br> and opening <img> with no closing tags",
+    xml: `<br><img>`,
+    html: false,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 3],
+      [NodeTypes.ELEMENT_NODE, 5, 8],
+    ],
+  },
+  {
     desc: "HTML script tag followed by text that shouldn't be interpreted as closing tag",
     xml: `<script> var t="</closing>"; </script> `,
     lex: [
@@ -721,6 +738,17 @@ var cases = [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 15],
       [NodeTypes.ELEMENT_NODE, 19, 23],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
+  },
+  {
+    desc: "JSON in JSX attribute twice",
+    xml: `<Text id="myid" labelHtml={{en: "My label"}} anotherLabelHtml={{en: "My label"}}/>`,
+    lex: [
+      [NodeTypes.ELEMENT_NODE, 1, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
+      [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 43],
+      [NodeTypes.JSX_ATTRIBUTE, 45, 61, 63, 79],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },

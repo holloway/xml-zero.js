@@ -105,8 +105,10 @@ const seekJSExpression = (xml: string, i: number): number => {
   let exitAfter = 1000000; // At least 10MB of tokens
   while (nesting > 0 && i < xml.length) {
     i++;
+
     i = seekChar(xml, i, JS_TOKENS);
     const char = xml[i];
+
     if (ALL_QUOTES.indexOf(char) !== -1) {
       i++;
       while (xml[i] !== char) {
@@ -137,7 +139,6 @@ const seekJSExpression = (xml: string, i: number): number => {
         exitAfter--;
         if (exitAfter === 0) throw Error("Exiting after too many loops");
       }
-      i++; // past closing character
     } else if (xml.substring(i, i + JS_COMMENT.length) === JS_COMMENT) {
       i = seekChar(xml, i, LINE_BREAKS);
       i++;
@@ -263,7 +264,7 @@ export const onAttribute = (
   }
 
   i = seekNotChar(xml, i, WHITESPACE);
-  return [i, true, token as TokenWithStart];
+  return [i, true, token as TokenAttribute];
 };
 
 export const onEndTag = (xml: string, i: number): ParseReturnWithoutToken => {
@@ -437,9 +438,16 @@ const findLastNodeType = (tokens: Token[], nodeType: number) => {
 const defaultBlackholes = ["script", "style"];
 
 type Options = {
+  /**
+   * Blackholes are our term for elements like `<script>` or `<style>` that could contain
+   * arbitrary content, and these elements only end when that element is closed, not when
+   * another element opens/closes.
+   *
+   * Ie, "<script> <style> </script>" will be parsed as <script> with a text node of " <style> ".
+   */
   blackholes?: string[];
-  jsx: boolean;
-  html: boolean;
+  jsx?: boolean;
+  html?: boolean;
 };
 
 const defaultOptions = {
@@ -448,22 +456,16 @@ const defaultOptions = {
   html: false,
 };
 
-export type InternalToken = [NODE_TYPE?, number?, number?];
+export type InternalToken = [NODE_TYPE?, number?, number?, number?, number?];
 
 export type TokenWithStart = [
   (
-    | NODE_TYPES["ATTRIBUTE_NODE"]
     | NODE_TYPES["CDATA_SECTION_NODE"]
     | NODE_TYPES["COMMENT_NODE"]
     | NODE_TYPES["DOCUMENT_FRAGMENT_NODE"]
     | NODE_TYPES["DOCUMENT_NODE"]
-    | NODE_TYPES["DOCUMENT_TYPE_NODE"]
-    | NODE_TYPES["ELEMENT_NODE"]
-    | NODE_TYPES["ENTITY_NODE"]
     | NODE_TYPES["ENTITY_REFERENCE_NODE"]
     | NODE_TYPES["JSX"]
-    | NODE_TYPES["JSX_ATTRIBUTE"]
-    | NODE_TYPES["NOTATION_NODE"]
     | NODE_TYPES["PROCESSING_INSTRUCTION_NODE"]
     | NODE_TYPES["TEXT_NODE"]
     | NODE_TYPES["XML_DECLARATION"]
@@ -472,11 +474,34 @@ export type TokenWithStart = [
   number?
 ];
 
-export type TokenWithoutStart = [NODE_TYPES["CLOSE_ELEMENT"]]; // closing element
+export type TokenAttribute = [
+  NODE_TYPES["ATTRIBUTE_NODE"] | NODE_TYPES["JSX_ATTRIBUTE"],
+  number, // In HTML the attribute name start index. In JSX either (1) the start index of the prop name, or (2) the value of a spread ie, "{...obj}".
+  number, // In HTML the attribute name end index. In JSX either (1) the end index of the prop name, or (2) the value of a spread ie, "{...obj}".
+  number?, // values are optional in HTML5 (if there's no value it's treated as boolean)
+  number?
+];
 
-export type Token = TokenWithStart | TokenWithoutStart;
+export type TokenWithOptionalStart = [
+  NODE_TYPES["ELEMENT_NODE"],
+  number?, // start and end are optional because of React Fragment nodes <>
+  number?
+];
 
-type ParseReturnWithToken = [number, boolean, TokenWithStart];
+export type TokenWithoutStart = [
+  | NODE_TYPES["DOCUMENT_TYPE_NODE"]
+  | NODE_TYPES["ENTITY_NODE"]
+  | NODE_TYPES["CLOSE_ELEMENT"]
+  | NODE_TYPES["NOTATION_NODE"]
+]; // closing element
+
+export type Token =
+  | TokenWithStart
+  | TokenWithOptionalStart
+  | TokenWithoutStart
+  | TokenAttribute;
+
+type ParseReturnWithToken = [number, boolean, TokenWithStart | TokenAttribute];
 
 type ParseReturnWithoutToken = [number, boolean];
 
