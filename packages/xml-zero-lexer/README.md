@@ -64,6 +64,7 @@ You can provide this function one or two arguments:
 
 1. _(Required)_ The input `string` of HTML, XML, or React JSX;
 2. _(Optional)_ `{ jsx?: boolean; html?: boolean; blackholes?: string[] }` where:
+
    **jsx** (boolean, optional, default=false): Whether to parse `{expression}` in the middle of text / child nodes as a distinct JSX token. React-JSX attributes are always parsed by `xml-zero-lexer` so this option is only whether JSX in text / child nodes should be parsed (`true`) or treated as text (`false`).
 
    **html** (boolean, optional, default=false): Currently, only affects whether to treat `<br>` and `<link>` and `<img>` (and other HTML self-closing tags) as self-closing tags, affecting whether to return another token of `[NodeTypes.CLOSE_ELEMENT]` when parsing these elements.
