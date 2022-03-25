@@ -1,7 +1,7 @@
-import Lex, { Token, NodeTypes, NodeTypeKeys } from "./index";
+import Lexx, { Token, NodeTypes, NodeTypeKeys } from "./index";
 import { isEqual } from "lodash";
 
-export const resolve = (xml: string, token: Token) => {
+export const resolve = (input: string, token: Token) => {
   if (!token || (token.length - 1) % 2 !== 0)
     return "Invalid 'token' variable: " + token;
 
@@ -13,79 +13,85 @@ export const resolve = (xml: string, token: Token) => {
       const i = 1 + pairIndex * 2;
       const tokenI = token[i];
       if (tokenI === undefined) throw Error(`Internal error`);
-      return xml.substring(tokenI, token[i + 1]);
+      return input.substring(tokenI, token[i + 1]);
     }),
   ];
 };
 
-const resolveNodes = (xml: string, tokens: Token[]) =>
-  tokens.map((token) => resolve(xml, token));
+const resolveNodes = (input: string, tokens: Token[]) =>
+  tokens.map((token) => resolve(input, token));
 
-const resolveNodeNumber = (xml: string, token: Token) => {
+const resolveNodeNumber = (input: string, token: Token) => {
   return [NodeTypeKeys[token[0]], token.slice(1)];
 };
 
-const resolveNodesNumbers = (xml: string, tokens: Token[]) => {
+const resolveNodesNumbers = (input: string, tokens: Token[]) => {
   if (!tokens || !tokens.map) return `Not structured. Was ` + tokens;
-  return tokens.map((token) => resolveNodeNumber(xml, token));
+  return tokens.map((token) => resolveNodeNumber(input, token));
 };
 
 type Case = {
-  desc: string;
-  xml: string;
+  description: string;
+  input: string;
   jsx?: boolean;
   html?: boolean;
-  lex: Token[];
+  expectedResult: Token[];
 };
 
 const cases: Case[] = [
-  //  This variable forked from xml.js https://github.com/nashwaan/xml-js under the MIT licence
+  //
+  // Welcome to the test cases.
+  //
+  // Please enjoy your stay on this internet website.
+  //
+  // This variable of test data was origially forked from xml.js
+  // https://github.com/nashwaan/xml-js under the MIT licence
+  // but later expanded by xml-zero-lexer to include
+  // React-JSX and HTML5 test cases.
+  //
   {
-    desc: "text",
-    xml: "text",
-    lex: [[NodeTypes.TEXT_NODE, 0, 5]],
+    description: "can parse text",
+    input: "text",
+    expectedResult: [[NodeTypes.TEXT_NODE, 0, 5]],
   },
   {
-    desc: "his divine shadow",
-    xml: "<p>his divine shadow</p>",
-    lex: [
+    description: "can parse element with text child node",
+    input: "<p>his divine shadow</p>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.TEXT_NODE, 3, 20],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },
   {
-    desc: "a tag with no name which we will consider to be not self-closing. surrounded by text",
-    xml: "text<>test",
-    lex: [
+    description:
+      "a tag with no name which we will consider to be a React Fragment <> so not self-closing",
+    input: "text<>test",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.TEXT_NODE, 6, 11],
     ],
   },
   {
-    desc: "text followed by an element that's self-closing element without a name </> ...actually indistinguishable from a closing tag without a name </> but we'll treat it as an element that's self-closing (with distinct .length === 1 so you can tell these apart... and if you want to ignore the open and just consider it a close you can ignore it)",
-    xml: "text</>",
-    lex: [
-      [NodeTypes.TEXT_NODE, 0, 4],
-      [NodeTypes.ELEMENT_NODE],
-      [NodeTypes.CLOSE_ELEMENT],
-    ],
+    description:
+      "text followed by a closing element without a name that we will consider to be a React Fragment.",
+    input: "text</>",
+    expectedResult: [[NodeTypes.TEXT_NODE, 0, 4], [NodeTypes.CLOSE_ELEMENT]],
   },
   {
-    desc: "the tag has no name self-closing followed by text",
-    xml: "text</>text",
-    lex: [
+    description: "the tag has no name self-closing followed by text",
+    input: "text</>text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
-      [NodeTypes.ELEMENT_NODE],
       [NodeTypes.CLOSE_ELEMENT],
       [NodeTypes.TEXT_NODE, 7, 12],
     ],
   },
   {
-    desc: "the tag has no name self-closing followed by text",
-    xml: "text< />text",
-    lex: [
+    description: "the tag has no name self-closing followed by text",
+    input: "text< />text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.CLOSE_ELEMENT],
@@ -93,9 +99,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "the tag has no name self-closing followed by text",
-    xml: "text< attr/>text",
-    lex: [
+    description: "the tag has no name self-closing followed by text",
+    input: "text< attr/>text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 10],
@@ -104,9 +110,10 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
-    xml: "text< attr/ >text",
-    lex: [
+    description:
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+    input: "text< attr/ >text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 10],
@@ -114,18 +121,16 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "fish tags. note that </> is parsed as an open AND close with .length===1 so you can filter it",
-    xml: "<></>",
-    lex: [
-      [NodeTypes.ELEMENT_NODE],
-      [NodeTypes.ELEMENT_NODE],
-      [NodeTypes.CLOSE_ELEMENT],
-    ],
+    description:
+      "fish tags. note that </> is parsed as an open AND close with .length===1 so you can filter it",
+    input: "<></>",
+    expectedResult: [[NodeTypes.ELEMENT_NODE], [NodeTypes.CLOSE_ELEMENT]],
   },
   {
-    desc: "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
-    xml: "text< doc></doc>text",
-    lex: [
+    description:
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+    input: "text< doc></doc>text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 9],
@@ -134,123 +139,127 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration",
-    xml: "<?xml?>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5]],
+    description: "declaration",
+    input: "<?xml?>",
+    expectedResult: [[NodeTypes.XML_DECLARATION, 2, 5]],
   },
   {
-    desc: "declaration with space",
-    xml: "<?xml ?>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5]],
+    description: "declaration with space",
+    input: "<?xml ?>",
+    expectedResult: [[NodeTypes.XML_DECLARATION, 2, 5]],
   },
   {
-    desc: "declaration with non-wellformed closing",
-    xml: "<?xml>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5]],
+    description: "declaration with non-wellformed closing",
+    input: "<?xml>",
+    expectedResult: [[NodeTypes.XML_DECLARATION, 2, 5]],
   },
   {
-    desc: "processing instruction",
-    xml: "<?xml-?>",
-    lex: [[NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 6]],
+    description: "processing instruction",
+    input: "<?xml-?>",
+    expectedResult: [[NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 6]],
   },
   {
-    desc: "declaration with attributes",
-    xml: '<?xml version="1.0"?>',
-    lex: [
+    description: "declaration with attributes",
+    input: '<?xml version="1.0"?>',
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
     ],
   },
   {
-    desc: "declaration with attribute following whitespace",
-    xml: '<?xml version="1.0" ?>',
-    lex: [
+    description: "declaration with attribute following whitespace",
+    input: '<?xml version="1.0" ?>',
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
     ],
   },
   {
-    desc: "declaration with attribute single quotes",
-    xml: "<?xml version='1.0'?>",
-    lex: [
+    description: "declaration with attribute single quotes",
+    input: "<?xml version='1.0'?>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
     ],
   },
   {
-    desc: "declaration with attribute single quotes value has a > in it",
-    xml: "<doc att='2>1'/>",
-    lex: [
+    description: "declaration with attribute single quotes value has a > in it",
+    input: "<doc att='2>1'/>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 4],
       [NodeTypes.ATTRIBUTE_NODE, 5, 8, 10, 13],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },
   {
-    desc: "declaration with two attributes",
-    xml: "<?xml version='1.0' lang=\"en\"    ?>",
-    lex: [
+    description: "declaration with two attributes",
+    input: "<?xml version='1.0' lang=\"en\"    ?>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
       [NodeTypes.ATTRIBUTE_NODE, 20, 24, 26, 28],
     ],
   },
   {
-    desc: "declaration with two attributes close together",
-    xml: "<?xml version='1.0'lang=\"en\"     ?>",
-    lex: [
+    description: "declaration with two attributes close together",
+    input: "<?xml version='1.0'lang=\"en\"     ?>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 18],
       [NodeTypes.ATTRIBUTE_NODE, 19, 23, 25, 27],
     ],
   },
   {
-    desc: "Processing instruction with attribute",
-    xml: '<?xml-stylesheet href="1.0"?>',
-    lex: [
+    description: "Processing instruction with attribute",
+    input: '<?xml-stylesheet href="1.0"?>',
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21, 23, 26],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute",
-    xml: "<?xml-stylesheet href?>",
-    lex: [
+    description: "Processing instruction with valueless attribute",
+    input: "<?xml-stylesheet href?>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute",
-    xml: "<?xml-stylesheet href yahoo='serious'?>",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute",
+    input: "<?xml-stylesheet href yahoo='serious'?>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 27, 29, 36],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute without speechmarks",
-    xml: "<?xml-stylesheet href yahoo=serious?>",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks",
+    input: "<?xml-stylesheet href yahoo=serious?>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing",
-    xml: "<?xml-stylesheet href yahoo=serious>",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing",
+    input: "<?xml-stylesheet href yahoo=serious>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name",
-    xml: "<?xml-stylesheet href yahoo=serious x>",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name",
+    input: "<?xml-stylesheet href yahoo=serious x>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 27, 28, 35],
@@ -258,53 +267,55 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name",
-    xml: "<?xml-stylesheet href xx>",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name",
+    input: "<?xml-stylesheet href xx>",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 24],
     ],
   },
   {
-    desc: "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name and a space",
-    xml: "<?xml-stylesheet href xx >",
-    lex: [
+    description:
+      "Processing instruction with valueless attribute followed by regular attribute without speechmarks malformed closing followed by valueless name and a space",
+    input: "<?xml-stylesheet href xx >",
+    expectedResult: [
       [NodeTypes.PROCESSING_INSTRUCTION_NODE, 2, 16],
       [NodeTypes.ATTRIBUTE_NODE, 17, 21],
       [NodeTypes.ATTRIBUTE_NODE, 22, 24],
     ],
   },
   {
-    desc: "declaration and self-closing element",
-    xml: "<?xml?><a/>",
-    lex: [
+    description: "declaration and self-closing element",
+    input: "<?xml?><a/>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },
   {
-    desc: "declaration and element",
-    xml: "<?xml?><a>",
-    lex: [
+    description: "declaration and element",
+    input: "<?xml?><a>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
     ],
   },
   {
-    desc: "declaration and two elements",
-    xml: "<?xml?><a><b>",
-    lex: [
+    description: "declaration and two elements",
+    input: "<?xml?><a><b>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.ELEMENT_NODE, 11, 12],
     ],
   },
   {
-    desc: "declaration and two elements (one self-closing)",
-    xml: "<?xml?><a/><b>",
-    lex: [
+    description: "declaration and two elements (one self-closing)",
+    input: "<?xml?><a/><b>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.CLOSE_ELEMENT],
@@ -312,9 +323,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration and two elements (one closing)",
-    xml: "<?xml?><a></a><b>",
-    lex: [
+    description: "declaration and two elements (one closing)",
+    input: "<?xml?><a></a><b>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.CLOSE_ELEMENT],
@@ -322,9 +333,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration and two elements (one self-closing)",
-    xml: "<?xml?><a></a><b/>",
-    lex: [
+    description: "declaration and two elements (one self-closing)",
+    input: "<?xml?><a></a><b/>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.CLOSE_ELEMENT],
@@ -333,58 +344,58 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "element followed by text",
-    xml: "<a>text",
-    lex: [
+    description: "element followed by text",
+    input: "<a>text",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.TEXT_NODE, 3, 8],
     ],
   },
   {
-    desc: "element surrounded by text",
-    xml: " <a>text",
-    lex: [
+    description: "element surrounded by text",
+    input: " <a>text",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 1],
       [NodeTypes.ELEMENT_NODE, 2, 3],
       [NodeTypes.TEXT_NODE, 4, 9],
     ],
   },
   {
-    desc: "comment",
-    xml: "<!-- test -->",
-    lex: [[NodeTypes.COMMENT_NODE, 4, 10]],
+    description: "comment",
+    input: "<!-- test -->",
+    expectedResult: [[NodeTypes.COMMENT_NODE, 4, 10]],
   },
   {
-    desc: "comment with text before",
-    xml: "a<!-- test -->",
-    lex: [
+    description: "comment with text before",
+    input: "a<!-- test -->",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 1],
       [NodeTypes.COMMENT_NODE, 5, 11],
     ],
   },
   {
-    desc: "comment with text before and after",
-    xml: "a<!-- test -->b",
-    lex: [
+    description: "comment with text before and after",
+    input: "a<!-- test -->b",
+    expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 1],
       [NodeTypes.COMMENT_NODE, 5, 11],
       [NodeTypes.TEXT_NODE, 14, 16],
     ],
   },
   {
-    desc: "self-closing element",
-    xml: "<a/>",
-    lex: [[NodeTypes.ELEMENT_NODE, 1, 2], [NodeTypes.CLOSE_ELEMENT]],
+    description: "self-closing element",
+    input: "<a/>",
+    expectedResult: [[NodeTypes.ELEMENT_NODE, 1, 2], [NodeTypes.CLOSE_ELEMENT]],
   },
   {
-    desc: "non-self-closing element",
-    xml: "<a>",
-    lex: [[NodeTypes.ELEMENT_NODE, 1, 2]],
+    description: "non-self-closing element",
+    input: "<a>",
+    expectedResult: [[NodeTypes.ELEMENT_NODE, 1, 2]],
   },
   {
-    desc: "nested elements",
-    xml: "<a><b/></a>",
-    lex: [
+    description: "nested elements",
+    input: "<a><b/></a>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.ELEMENT_NODE, 4, 5],
       [NodeTypes.CLOSE_ELEMENT],
@@ -392,9 +403,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration and elements",
-    xml: "<?xml?><a><b/></a>",
-    lex: [
+    description: "declaration and elements",
+    input: "<?xml?><a><b/></a>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.ELEMENT_NODE, 11, 12],
@@ -403,9 +414,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration and elements with attributes",
-    xml: "<?xml?><a href='http://html5zombo.com'><b/></a>",
-    lex: [
+    description: "declaration and elements with attributes",
+    input: "<?xml?><a href='http://html5zombo.com'><b/></a>",
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14, 16, 37],
@@ -415,29 +426,42 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "declaration with weird self-closing",
-    xml: "<?xml/>",
-    lex: [[NodeTypes.XML_DECLARATION, 2, 5], [NodeTypes.CLOSE_ELEMENT]],
+    description: "declaration with weird self-closing",
+    input: "<?xml/>",
+    expectedResult: [
+      [NodeTypes.XML_DECLARATION, 2, 5],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
   },
   {
-    desc: "Doctype",
-    xml: `<!DOCTYPE html PUBLIC
+    description: "Doctype",
+    input: `<!DOCTYPE html PUBLIC
     "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">`,
-    lex: [
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
+      /* Treating these all as 4 distinct valueless attributes (4×2 indexes)
+         not 2 attributes with values (2×4 indexes)
+         because there's no = char between them so I'll parse them as
+         separate attributes
+      */
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.ATTRIBUTE_NODE, 15, 21],
+      /* The "" characters on the last two attributes aren't included in the
+         indexes because it's reversible from parsing the attribute name string
+         for characters that need escaping. Exact serialization rules will vary
+         depending on your serialization target format.
+      */
       [NodeTypes.ATTRIBUTE_NODE, 27, 65],
       [NodeTypes.ATTRIBUTE_NODE, 72, 127],
     ],
   },
   {
-    desc: "Doctype followed by text",
-    xml: `<!DOCTYPE html PUBLIC
+    description: "Doctype followed by text",
+    input: `<!DOCTYPE html PUBLIC
     "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">ab`,
-    lex: [
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.ATTRIBUTE_NODE, 15, 21],
@@ -447,40 +471,40 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "HTML5 followed by html root tag",
-    xml: `<!DOCTYPE html><html>`,
-    lex: [
+    description: "HTML5 followed by html root tag",
+    input: `<!DOCTYPE html><html>`,
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.ELEMENT_NODE, 16, 20],
     ],
   },
   {
-    desc: "CDATA Section",
-    xml: `<![CDATA[ \t <foo></bar> \t ]]>`,
-    lex: [[NodeTypes.CDATA_SECTION_NODE, 9, 26]],
+    description: "CDATA Section",
+    input: `<![CDATA[ \t <foo></bar> \t ]]>`,
+    expectedResult: [[NodeTypes.CDATA_SECTION_NODE, 9, 26]],
   },
   {
-    desc: "CDATA Section followed by text",
-    xml: `<![CDATA[ \t <foo></bar> \t ]]>abc`,
-    lex: [
+    description: "CDATA Section followed by text",
+    input: `<![CDATA[ \t <foo></bar> \t ]]>abc`,
+    expectedResult: [
       [NodeTypes.CDATA_SECTION_NODE, 9, 26],
       [NodeTypes.TEXT_NODE, 29, 33],
     ],
   },
   {
-    desc: "Entity",
-    xml: `<!ENTITY entityname "replacement text">`,
-    lex: [
+    description: "Entity",
+    input: `<!ENTITY entityname "replacement text">`,
+    expectedResult: [
       [NodeTypes.ENTITY_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 9, 19],
       [NodeTypes.ATTRIBUTE_NODE, 21, 37],
     ],
   },
   {
-    desc: "Entity followed by text",
-    xml: `<!ENTITY entityname "replacement text">a`,
-    lex: [
+    description: "Entity followed by text",
+    input: `<!ENTITY entityname "replacement text">a`,
+    expectedResult: [
       [NodeTypes.ENTITY_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 9, 19],
       [NodeTypes.ATTRIBUTE_NODE, 21, 37],
@@ -488,14 +512,15 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "Doctype with entity definitions, followed by element with an entity in text node",
-    xml: `<!DOCTYPE y [
+    description:
+      "Doctype with entity definitions, followed by element with an entity in text node",
+    input: `<!DOCTYPE y [
      <!ENTITY % b '&#37;c;'>
      <!ENTITY % c '&#60;!ENTITY a "x" >'>
      %b;
     ]>
     <y>&nbsp;</y>`,
-    lex: [
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 11],
       [NodeTypes.ATTRIBUTE_NODE, 12, 99],
@@ -506,9 +531,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "Notation element followed by text",
-    xml: `<!NOTATION name identifier "helper" >a`,
-    lex: [
+    description: "Notation element followed by text",
+    input: `<!NOTATION name identifier "helper" >a`,
+    expectedResult: [
       [NodeTypes.NOTATION_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 11, 15],
       [NodeTypes.ATTRIBUTE_NODE, 16, 26],
@@ -517,16 +542,16 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "Weird <[ ... ]> syntax (maybe shorthand CDATA?) I once saw",
-    xml: `<[a<b></a>]>a`,
-    lex: [
+    description: "Weird <[ ... ]> syntax (maybe shorthand CDATA?) I once saw",
+    input: `<[a<b></a>]>a`,
+    expectedResult: [
       [NodeTypes.CDATA_SECTION_NODE, 2, 10],
       [NodeTypes.TEXT_NODE, 12, 14],
     ],
   },
   {
-    desc: "HTML5 example",
-    xml: `<!DOCTYPE html>
+    description: "HTML5 example",
+    input: `<!DOCTYPE html>
   <html>
   <head>
   <meta charset="UTF-8">
@@ -538,7 +563,7 @@ const cases: Case[] = [
   </body>
 
   </html> `,
-    lex: [
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.TEXT_NODE, 15, 18],
@@ -564,9 +589,9 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "XHTML5 example with multiple file input",
-    xml: `<!DOCTYPE html> <p><input type="file" multiple/></p> `,
-    lex: [
+    description: "XHTML5 example with multiple file input",
+    input: `<!DOCTYPE html> <p><input type="file" multiple/></p> `,
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.TEXT_NODE, 15, 16],
@@ -580,10 +605,11 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "HTML5 equivalent of preceding example with self-closing <input>",
-    xml: `<!DOCTYPE html> <p><input type="file" multiple></p> `,
+    description:
+      "HTML5 equivalent of preceding example with self-closing <input>",
+    input: `<!DOCTYPE html> <p><input type="file" multiple></p> `,
     html: true,
-    lex: [
+    expectedResult: [
       [NodeTypes.DOCUMENT_TYPE_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14],
       [NodeTypes.TEXT_NODE, 15, 16],
@@ -597,10 +623,10 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "HTML5 self-closing tags without attributes",
-    xml: `<br><img>`,
+    description: "HTML5 self-closing tags without attributes",
+    input: `<br><img>`,
     html: true,
-    lex: [
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 3],
       [NodeTypes.CLOSE_ELEMENT],
       [NodeTypes.ELEMENT_NODE, 5, 8],
@@ -608,18 +634,20 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "HTML5 self-closing tags without attributes but with HTML parsing mode off so it should be interpreted as opening <br> and opening <img> with no closing tags",
-    xml: `<br><img>`,
+    description:
+      "HTML5 self-closing tags without attributes but with HTML parsing mode off so it should be interpreted as opening <br> and opening <img> with no closing tags",
+    input: `<br><img>`,
     html: false,
-    lex: [
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 3],
       [NodeTypes.ELEMENT_NODE, 5, 8],
     ],
   },
   {
-    desc: "HTML script tag followed by text that shouldn't be interpreted as closing tag",
-    xml: `<script> var t="</closing>"; </script> `,
-    lex: [
+    description:
+      "HTML script tag followed by text that shouldn't be interpreted as closing tag",
+    input: `<script> var t="</closing>"; </script> `,
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.TEXT_NODE, 8, 29],
       [NodeTypes.CLOSE_ELEMENT],
@@ -627,75 +655,76 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "Basic JSX attribute",
-    xml: "<button onClick={this.element}>",
-    lex: [
+    description: "Basic JSX attribute",
+    input: "<button onClick={this.element}>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 29],
     ],
   },
   {
-    desc: "Basic JSX spread",
-    xml: "<button {...obj}>",
-    lex: [
+    description: "Basic JSX spread",
+    input: "<button {...obj}>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 9, 15],
     ],
   },
   {
-    desc: "JSX attribute with nesting",
-    xml: `<button onClick={this.element.bind(this, () => { something(); }) }>a`,
-    lex: [
+    description: "JSX attribute with nesting",
+    input: `<button onClick={this.element.bind(this, () => { something(); }) }>a`,
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 65],
       [NodeTypes.TEXT_NODE, 67, 69],
     ],
   },
   {
-    desc: "JSX attribute with nesting and strings",
-    xml: `<button onClick={this.element.bind(this, () => { "123}}}"; something(); }) }>a`,
-    lex: [
+    description: "JSX attribute with nesting and strings",
+    input: `<button onClick={this.element.bind(this, () => { "123}}}"; something(); }) }>a`,
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 75],
       [NodeTypes.TEXT_NODE, 77, 79],
     ],
   },
   {
-    desc: "JSX attribute with nesting and comments",
-    xml: `<button onClick={this.element.bind(this, () => { // }}}}
+    description: "JSX attribute with nesting and comments",
+    input: `<button onClick={this.element.bind(this, () => { // }}}}
     something(); }) }>a`,
-    lex: [
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 77],
       [NodeTypes.TEXT_NODE, 79, 81],
     ],
   },
   {
-    desc: "JSX attribute with nesting and multiline comments",
-    xml: `<button onClick={this.element.bind(this, () => { /* }}}}
+    description: "JSX attribute with nesting and multiline comments",
+    input: `<button onClick={this.element.bind(this, () => { /* }}}}
   }}
   */
     something(); }) }>a`,
-    lex: [
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 87],
       [NodeTypes.TEXT_NODE, 89, 91],
     ],
   },
   {
-    desc: "JSX attribute with malformed string with linebreak at end",
-    xml: `<button onClick={this.element.bind(this, () => { const x = "test
+    description: "JSX attribute with malformed string with linebreak at end",
+    input: `<button onClick={this.element.bind(this, () => { const x = "test
     something(); }) }>a`,
-    lex: [
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 85],
       [NodeTypes.TEXT_NODE, 87, 89],
     ],
   },
   {
-    desc: "JSX attribute with template string and nested expression",
-    xml: "<button onClick={this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }>a",
-    lex: [
+    description: "JSX attribute with template string and nested expression",
+    input:
+      "<button onClick={this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }>a",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.JSX_ATTRIBUTE, 8, 15, 17, 114],
       [NodeTypes.TEXT_NODE, 116, 118],
@@ -703,9 +732,10 @@ const cases: Case[] = [
     jsx: true,
   },
   {
-    desc: "JSX inline with template string and nested expression",
-    xml: "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
-    lex: [
+    description: "JSX inline with template string and nested expression",
+    input:
+      "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.TEXT_NODE, 8, 13],
       [NodeTypes.JSX, 14, 111],
@@ -714,27 +744,28 @@ const cases: Case[] = [
     jsx: true,
   },
   {
-    desc: "JSX example with JSX turned off",
-    xml: "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
-    lex: [
+    description: "JSX example with JSX turned off",
+    input:
+      "<button>hello{this.element.bind(this, () => { const x = `test${() => { /* ignored }}}} */ }}b` something(); }) }how are you?",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.TEXT_NODE, 8, 125],
     ],
     jsx: false,
   },
   {
-    desc: "Weird attribute name",
-    xml: "<a xml::lang='b'/>",
-    lex: [
+    description: "Weird attribute name",
+    input: "<a input::lang='b'/>",
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
-      [NodeTypes.ATTRIBUTE_NODE, 3, 12, 14, 15],
+      [NodeTypes.ATTRIBUTE_NODE, 3, 14, 16, 17],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },
   {
-    desc: "Declaration with empty attribute",
-    xml: '<?xml version=""?><root></root>',
-    lex: [
+    description: "Declaration with empty attribute",
+    input: '<?xml version=""?><root></root>',
+    expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 15],
       [NodeTypes.ELEMENT_NODE, 19, 23],
@@ -742,14 +773,23 @@ const cases: Case[] = [
     ],
   },
   {
-    desc: "JSON in JSX attribute twice",
-    xml: `<Text id="myid" labelHtml={{en: "My label"}} anotherLabelHtml={{en: "My label"}}/>`,
-    lex: [
+    description: "JSON in JSX attribute twice",
+    input: `<Text id="myid" labelHtml={{en: "My label"}} anotherLabelHtml={{en: "My label"}}/>`,
+    expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 43],
       [NodeTypes.JSX_ATTRIBUTE, 45, 61, 63, 79],
       [NodeTypes.CLOSE_ELEMENT],
+    ],
+  },
+  {
+    description: "Variable attribute length",
+    input: '<a href="//zombo.com" hidden>',
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 2],
+      [NodeTypes.ATTRIBUTE_NODE, 3, 7, 9, 20],
+      [NodeTypes.ATTRIBUTE_NODE, 22, 28],
     ],
   },
 ];
@@ -759,7 +799,7 @@ test("lexes", async () => {
     cases.map((eachCase, i) => {
       let result;
       try {
-        result = Lex(eachCase.xml, {
+        result = Lexx(eachCase.input, {
           jsx: !!eachCase.jsx,
           html: !!eachCase.html,
         });
@@ -768,19 +808,22 @@ test("lexes", async () => {
         throw e;
       }
 
-      if (!isEqual(result, eachCase.lex)) {
-        console.log("Not equal");
-        console.log(resolveNodesNumbers(eachCase.xml, result));
-        console.log("after");
+      if (!isEqual(result, eachCase.expectedResult)) {
+        console.log("Not equal", `"${eachCase.description}"`);
+        console.log("From input of ", eachCase.input);
+        console.log("Expected:", resolveNodesNumbers(eachCase.input, result));
         try {
-          result = Lex(eachCase.xml, {
+          result = Lexx(eachCase.input, {
             jsx: !!eachCase.jsx,
             html: !!eachCase.html,
           });
         } catch (e) {}
         if (result) {
-          console.log("Result:", result, " from ", eachCase.xml);
-          console.log(resolveNodes(eachCase.xml, result));
+          console.log("Received:", result);
+          console.log(
+            "Which indexes the input as",
+            resolveNodes(eachCase.input, result)
+          );
         }
       } else {
         // if (i === cases.length - 1) {
@@ -788,7 +831,7 @@ test("lexes", async () => {
         // }
       }
 
-      expect(result).toEqual(eachCase.lex);
+      expect(result).toEqual(eachCase.expectedResult);
     })
   );
 });

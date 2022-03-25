@@ -42,9 +42,9 @@ export const NodeTypes = {
 
 type NODE_TYPES = typeof NodeTypes;
 
-type NODE_TYPE = typeof NodeTypes[keyof typeof NodeTypes];
+export type NODE_TYPE = typeof NodeTypes[keyof typeof NodeTypes];
 
-type NODE_NAME = keyof typeof NodeTypes;
+export type NODE_NAME = keyof typeof NodeTypes;
 
 export const NodeTypeKeys = Object.keys(NodeTypes).sort(
   (a, b) => NodeTypes[a as NODE_NAME] - NodeTypes[b as NODE_NAME]
@@ -395,7 +395,7 @@ export const onBlackhole = (
   return [i, true, token as TokenWithStart];
 };
 
-const HTML_SELF_CLOSING_ELEMENTS = [
+export const HTML_SELF_CLOSING_ELEMENTS = [
   "area",
   "base",
   "br",
@@ -513,10 +513,9 @@ const Lexx = (xml: string, options?: Options) => {
   };
 
   const tokens: Token[] = [];
-  let i: number = 0; // Number.MAX_SAFE_INTEGER is 9007199254740991 so that's 9007199 gigabytes of string and using integers makes sense
+  let i: number = 0;
   let char;
   let token;
-  let textTokens;
   let debugExitAfterLoops = Math.min(xml.length, 1073741824); // an arbitrary large number
   let inElement: boolean = false;
 
@@ -539,7 +538,8 @@ const Lexx = (xml: string, options?: Options) => {
         inElement = true;
       }
     }
-    // don't join with above `if` to make this an `else if` because in above `inElement` can be set `true`
+    // CAREFUL don't refactor to join following `if` with preceding `if` to make this an `else if` because
+    // in above `inElement` can be set `true`, making both branches possible.
     if (inElement) {
       switch (char) {
         case "<":
@@ -549,8 +549,8 @@ const Lexx = (xml: string, options?: Options) => {
             case "/":
               inElement = false;
               if (xml[i + 1] === ">") {
-                [i, inElement, token] = onElement(xml, i, inElement);
-                tokens.push(token);
+                // a React Fragment </> closing tag without a name
+                i++;
               }
               [i, inElement, token] = onClose(xml, i, inElement);
               tokens.push(token);
