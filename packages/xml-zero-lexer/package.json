@@ -1,7 +1,7 @@
 {
   "name": "xml-zero-lexer",
   "description": "Friendly and forgiving HTML5/XML5/JSX lexer/parser with lots of tests. Memory-efficient and Web Worker compatible.",
-  "version": "3.1.6",
+  "version": "3.1.7",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
