@@ -111,7 +111,7 @@ const cases: Case[] = [
   },
   {
     description:
-      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element because the slash isn't at the end.",
     input: "text< attr/ >text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
@@ -122,13 +122,13 @@ const cases: Case[] = [
   },
   {
     description:
-      "fish tags. note that </> is parsed as an open AND close with .length===1 so you can filter it",
+      "React-JSX fragment (aka fish tags, because it looks like a fish, sort of). <> is open and </> is close.",
     input: "<></>",
     expectedResult: [[NodeTypes.ELEMENT_NODE], [NodeTypes.CLOSE_ELEMENT]],
   },
   {
     description:
-      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element. If you want slashes use quotemarks",
+      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element.",
     input: "text< doc></doc>text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
@@ -352,7 +352,8 @@ const cases: Case[] = [
     ],
   },
   {
-    description: "element surrounded by text",
+    description:
+      "element surrounded by text (whitespace char and the string 'text')",
     input: " <a>text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 1],
@@ -391,6 +392,17 @@ const cases: Case[] = [
     description: "non-self-closing element",
     input: "<a>",
     expectedResult: [[NodeTypes.ELEMENT_NODE, 1, 2]],
+  },
+  {
+    description: `element is parsed as '<"p>' with valueless attributes 'o' and 'b"'. The closing element's attributes and whitespace are ignored`,
+    input: `<"p o b">his divine shadow</"p o b">`,
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 3],
+      [NodeTypes.ATTRIBUTE_NODE, 4, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 8],
+      [NodeTypes.TEXT_NODE, 9, 26],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
   },
   {
     description: "nested elements",

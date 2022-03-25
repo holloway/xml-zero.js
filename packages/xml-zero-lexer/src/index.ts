@@ -202,7 +202,7 @@ export const onAttribute = (
     i += 1;
     token.push(i); // end of attribute name
   } else if (xml[i] === "{") {
-    token.pop(); // scrub default attribute
+    token.pop(); // delete default NODE_TYPE because this is JSX
     token.push(NodeTypes.JSX_ATTRIBUTE);
     i++;
     token.push(i);
@@ -282,7 +282,7 @@ export const onClose = (
 ): ParseReturnWithToken => {
   // console.log("onClose, starting... ", xml[i], "from", xml);
   const token: InternalToken = [NodeTypes.CLOSE_ELEMENT];
-  i = seekChar(xml, i, [">", ...WHITESPACE]);
+  i = seekChar(xml, i, [">"]);
   i++;
   return [i, false, token as TokenWithStart];
 };
