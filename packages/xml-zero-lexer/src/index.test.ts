@@ -786,13 +786,43 @@ const cases: Case[] = [
     ],
   },
   {
-    description: "POJO in JSX attribute twice",
+    description: "POJO in JSX attribute (ie, parsed JSON)",
     input: `<Text id="myid" labelHtml={{en: "My label"}} anotherLabelHtml={{en: "My label"}}/>`,
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 43],
       [NodeTypes.JSX_ATTRIBUTE, 45, 61, 63, 79],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
+  },
+  {
+    description: "Deep POJO in JSX attribute",
+    input: `<Text id="myid" labelHtml={{en: "My label", z:[1,{a:2},"sdf"]}}/>`,
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
+      [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 62],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
+  },
+  {
+    description: "Deep POJO followed by whitespace in JSX attribute",
+    input: `<Text id="myid" labelHtml={{en: "My label", z:[1,{a:2},"sdf"]}  }/>`,
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
+      [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 64],
+      [NodeTypes.CLOSE_ELEMENT],
+    ],
+  },
+  {
+    description: "Deep POJO surrounded by whitespace in JSX attribute",
+    input: `<Text id="myid" labelHtml={   {en: "My label", z:[1,{a:2},"sdf"]}  }/>`,
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 5],
+      [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
+      [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 67],
       [NodeTypes.CLOSE_ELEMENT],
     ],
   },
