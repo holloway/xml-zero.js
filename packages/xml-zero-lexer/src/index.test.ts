@@ -60,7 +60,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.TEXT_NODE, 3, 20],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 22, 23],
     ],
   },
   {
@@ -77,35 +77,40 @@ const cases: Case[] = [
     description:
       "text followed by a closing element without a name that we will consider to be a React Fragment.",
     input: "text</>",
-    expectedResult: [[NodeTypes.TEXT_NODE, 0, 4], [NodeTypes.CLOSE_ELEMENT]],
+    expectedResult: [
+      [NodeTypes.TEXT_NODE, 0, 4],
+      [NodeTypes.CLOSE_ELEMENT, 6, 6],
+    ],
   },
   {
     description: "the tag has no name self-closing followed by text",
     input: "text</>text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 6, 6],
       [NodeTypes.TEXT_NODE, 7, 12],
     ],
   },
   {
-    description: "the tag has no name self-closing followed by text",
+    description:
+      "the tag has no name and a space and is self-closing followed by text",
     input: "text< />text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 7, 7],
       [NodeTypes.TEXT_NODE, 8, 13],
     ],
   },
   {
-    description: "the tag has no name self-closing followed by text",
+    description:
+      "the tag has no name, then a boolean attribute, then self-closing followed by text",
     input: "text< attr/>text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 10],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 11, 11],
       [NodeTypes.TEXT_NODE, 12, 17],
     ],
   },
@@ -124,17 +129,17 @@ const cases: Case[] = [
     description:
       "React-JSX fragment (aka fish tags, because it looks like a fish, sort of). <> is open and </> is close.",
     input: "<></>",
-    expectedResult: [[NodeTypes.ELEMENT_NODE], [NodeTypes.CLOSE_ELEMENT]],
+    expectedResult: [[NodeTypes.ELEMENT_NODE], [NodeTypes.CLOSE_ELEMENT, 4, 4]],
   },
   {
     description:
-      "the tag has no name and has an attribute with a slash and space at the end. the slash is removed to be consistant with parsing of < attr/> but we don't consider it a self-closing element.",
+      "the tag has no name and has an attribute. The an unrelated element closes, and it's followed by text.",
     input: "text< doc></doc>text",
     expectedResult: [
       [NodeTypes.TEXT_NODE, 0, 4],
       [NodeTypes.ELEMENT_NODE],
       [NodeTypes.ATTRIBUTE_NODE, 6, 9],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 12, 15],
       [NodeTypes.TEXT_NODE, 16, 21],
     ],
   },
@@ -188,7 +193,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 4],
       [NodeTypes.ATTRIBUTE_NODE, 5, 8, 10, 13],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 15, 15],
     ],
   },
   {
@@ -292,7 +297,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 10, 10],
     ],
   },
   {
@@ -318,7 +323,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 10, 10],
       [NodeTypes.ELEMENT_NODE, 12, 13],
     ],
   },
@@ -328,7 +333,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 12, 13],
       [NodeTypes.ELEMENT_NODE, 15, 16],
     ],
   },
@@ -338,9 +343,9 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 12, 13],
       [NodeTypes.ELEMENT_NODE, 15, 16],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 17, 17],
     ],
   },
   {
@@ -386,7 +391,10 @@ const cases: Case[] = [
   {
     description: "self-closing element",
     input: "<a/>",
-    expectedResult: [[NodeTypes.ELEMENT_NODE, 1, 2], [NodeTypes.CLOSE_ELEMENT]],
+    expectedResult: [
+      [NodeTypes.ELEMENT_NODE, 1, 2],
+      [NodeTypes.CLOSE_ELEMENT, 3, 3],
+    ],
   },
   {
     description: "non-self-closing element",
@@ -401,7 +409,7 @@ const cases: Case[] = [
       [NodeTypes.ATTRIBUTE_NODE, 4, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8],
       [NodeTypes.TEXT_NODE, 9, 26],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 28, 35],
     ],
   },
   {
@@ -410,8 +418,8 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.ELEMENT_NODE, 4, 5],
-      [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 6, 6],
+      [NodeTypes.CLOSE_ELEMENT, 9, 10],
     ],
   },
   {
@@ -421,8 +429,8 @@ const cases: Case[] = [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.ELEMENT_NODE, 11, 12],
-      [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 13, 13],
+      [NodeTypes.CLOSE_ELEMENT, 16, 17],
     ],
   },
   {
@@ -433,8 +441,8 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 8, 9],
       [NodeTypes.ATTRIBUTE_NODE, 10, 14, 16, 37],
       [NodeTypes.ELEMENT_NODE, 40, 41],
-      [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 42, 42],
+      [NodeTypes.CLOSE_ELEMENT, 45, 46],
     ],
   },
   {
@@ -442,7 +450,7 @@ const cases: Case[] = [
     input: "<?xml/>",
     expectedResult: [
       [NodeTypes.XML_DECLARATION, 2, 5],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 6, 6],
     ],
   },
   {
@@ -539,7 +547,7 @@ const cases: Case[] = [
       [NodeTypes.TEXT_NODE, 100, 105],
       [NodeTypes.ELEMENT_NODE, 106, 107],
       [NodeTypes.TEXT_NODE, 108, 114],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 116, 117],
     ],
   },
   {
@@ -588,15 +596,15 @@ const cases: Case[] = [
       [NodeTypes.TEXT_NODE, 58, 61],
       [NodeTypes.ELEMENT_NODE, 62, 67],
       [NodeTypes.TEXT_NODE, 68, 89],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 91, 96],
       [NodeTypes.TEXT_NODE, 97, 100],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 102, 106],
       [NodeTypes.TEXT_NODE, 107, 111],
       [NodeTypes.ELEMENT_NODE, 112, 116],
       [NodeTypes.TEXT_NODE, 117, 152],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 154, 158],
       [NodeTypes.TEXT_NODE, 159, 163],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 165, 169],
       [NodeTypes.TEXT_NODE, 170, 172],
     ],
   },
@@ -611,8 +619,8 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 20, 25],
       [NodeTypes.ATTRIBUTE_NODE, 26, 30, 32, 36],
       [NodeTypes.ATTRIBUTE_NODE, 38, 46],
-      [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 47, 47],
+      [NodeTypes.CLOSE_ELEMENT, 50, 51],
       [NodeTypes.TEXT_NODE, 52, 54],
     ],
   },
@@ -629,8 +637,8 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 20, 25],
       [NodeTypes.ATTRIBUTE_NODE, 26, 30, 32, 36],
       [NodeTypes.ATTRIBUTE_NODE, 38, 46],
-      [NodeTypes.CLOSE_ELEMENT],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 47, 47],
+      [NodeTypes.CLOSE_ELEMENT, 49, 50],
       [NodeTypes.TEXT_NODE, 51, 53],
     ],
   },
@@ -640,9 +648,9 @@ const cases: Case[] = [
     html: true,
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 3],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 4, 4],
       [NodeTypes.ELEMENT_NODE, 5, 8],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 9, 9],
     ],
   },
   {
@@ -662,7 +670,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 7],
       [NodeTypes.TEXT_NODE, 8, 29],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 31, 37],
       [NodeTypes.TEXT_NODE, 38, 40],
     ],
   },
@@ -772,7 +780,7 @@ const cases: Case[] = [
     expectedResult: [
       [NodeTypes.ELEMENT_NODE, 1, 2],
       [NodeTypes.ATTRIBUTE_NODE, 3, 14, 16, 17],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 19, 19],
     ],
   },
   {
@@ -782,7 +790,7 @@ const cases: Case[] = [
       [NodeTypes.XML_DECLARATION, 2, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 13, 15, 15],
       [NodeTypes.ELEMENT_NODE, 19, 23],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 26, 30],
     ],
   },
   {
@@ -793,7 +801,7 @@ const cases: Case[] = [
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 43],
       [NodeTypes.JSX_ATTRIBUTE, 45, 61, 63, 79],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 81, 81],
     ],
   },
   {
@@ -803,7 +811,7 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 1, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 62],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 64, 64],
     ],
   },
   {
@@ -813,7 +821,7 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 1, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 64],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 66, 66],
     ],
   },
   {
@@ -823,7 +831,7 @@ const cases: Case[] = [
       [NodeTypes.ELEMENT_NODE, 1, 5],
       [NodeTypes.ATTRIBUTE_NODE, 6, 8, 10, 14],
       [NodeTypes.JSX_ATTRIBUTE, 16, 25, 27, 67],
-      [NodeTypes.CLOSE_ELEMENT],
+      [NodeTypes.CLOSE_ELEMENT, 69, 69],
     ],
   },
   {

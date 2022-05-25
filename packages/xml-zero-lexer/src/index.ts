@@ -280,11 +280,15 @@ export const onClose = (
   i: number,
   inElement: boolean
 ): ParseReturnWithToken => {
-  // console.log("onClose, starting... ", xml[i], "from", xml);
-  const token: InternalToken = [NodeTypes.CLOSE_ELEMENT];
+  const startI = i;
   i = seekChar(xml, i, [">"]);
+  const endToken: Token = [
+    NodeTypes.CLOSE_ELEMENT,
+    startI === i ? startI : startI + 1,
+    i,
+  ];
   i++;
-  return [i, false, token as TokenWithStart];
+  return [i, false, endToken];
 };
 
 export const onElement = (
@@ -413,8 +417,9 @@ export const HTML_SELF_CLOSING_ELEMENTS = [
 
 const onHTMLSelfClosingElement = (
   xml: string,
+  i: number,
   tokens: Token[]
-): undefined | TokenWithoutStart => {
+): undefined | TokenWithStart => {
   const token = findLastNodeType(tokens, NodeTypes.ELEMENT_NODE);
   if (token && token.length > 2) {
     const tokenOne = token[1];
@@ -424,7 +429,7 @@ const onHTMLSelfClosingElement = (
     }
     const tagName = xml.substring(tokenOne, tokenTwo).toLowerCase(); // lowercase because HTML elements are case-insensitive
     if (HTML_SELF_CLOSING_ELEMENTS.indexOf(tagName) !== -1) {
-      return [NodeTypes.CLOSE_ELEMENT];
+      return [NodeTypes.CLOSE_ELEMENT, i, i];
     }
   }
 };
@@ -443,7 +448,8 @@ type Options = {
    * arbitrary content, and these elements only end when that element is closed, not when
    * another element opens/closes.
    *
-   * Ie, "<script> <style> </script>" will be parsed as <script> with a text node of " <style> ".
+   * Ie, "<script> <style> </script>" will be parsed as <script> with a text node of
+   * " <style> " because it's within the "<script>".
    */
   blackholes?: string[];
   jsx?: boolean;
@@ -469,6 +475,7 @@ export type TokenWithStart = [
     | NODE_TYPES["PROCESSING_INSTRUCTION_NODE"]
     | NODE_TYPES["TEXT_NODE"]
     | NODE_TYPES["XML_DECLARATION"]
+    | NODE_TYPES["CLOSE_ELEMENT"]
   ),
   number,
   number?
@@ -491,7 +498,6 @@ export type TokenWithOptionalStart = [
 export type TokenWithoutStart = [
   | NODE_TYPES["DOCUMENT_TYPE_NODE"]
   | NODE_TYPES["ENTITY_NODE"]
-  | NODE_TYPES["CLOSE_ELEMENT"]
   | NODE_TYPES["NOTATION_NODE"]
 ]; // closing element
 
@@ -606,7 +612,7 @@ const Lexx = (xml: string, options?: Options) => {
             tokens.push(token);
           }
           if (useOptions.html) {
-            token = onHTMLSelfClosingElement(xml, tokens);
+            token = onHTMLSelfClosingElement(xml, i, tokens);
             if (token) {
               tokens.push(token);
             }
@@ -622,7 +628,7 @@ const Lexx = (xml: string, options?: Options) => {
           [i, inElement, token] = onAttribute(xml, i, inElement);
           tokens.push(token);
           if (!inElement && useOptions.html) {
-            token = onHTMLSelfClosingElement(xml, tokens);
+            token = onHTMLSelfClosingElement(xml, i, tokens);
             if (token) {
               tokens.push(token);
             }
